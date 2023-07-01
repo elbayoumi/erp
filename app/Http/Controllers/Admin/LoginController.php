@@ -14,15 +14,15 @@ return view('admin.auth.login');
 public function login(LoginRequest $request){
 if(auth()->guard('admin')->attempt(['username'=>$request->input('username'),'password'=>$request->input('password')]))
 {
-return redirect()->route('admin.dashboard'); 
+return redirect()->route('dashboard');
 }else{
- 
-return redirect()->route('admin.showlogin')->with(['error' => 'عفوا بيانات تسجيل الدخول غير صحيحة !!']);; 
+
+return redirect()->route('showlogin')->with(['error' => 'عفوا بيانات تسجيل الدخول غير صحيحة !!']);;
 }
 }
 public function logout(){
 auth()->logout();
-return redirect()->route('admin.showlogin');
+return redirect()->route('showlogin');
 }
 /*
 function make_new_admin(){

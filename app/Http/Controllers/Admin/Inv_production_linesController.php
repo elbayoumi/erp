@@ -30,7 +30,7 @@ $info->updated_by_admin = Admin::where('id', $info->updated_by)->value('name');
 }
 return view('admin.inv_production_lines.index', ['data' => $data]);
 }
-   
+
 
 
 public function create()
@@ -127,7 +127,7 @@ $data_insert_account['com_code'] = $com_code;
 $data_insert_account['other_table_FK'] = $data_insert['production_lines_code'];
 $flag = insert(new Account(), $data_insert_account);
 }
-return redirect()->route('admin.inv_production_lines.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('inv_production_lines.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -140,7 +140,7 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_production_lines(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-    return redirect()->route('admin.inv_production_lines.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('inv_production_lines.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
 return view('admin.inv_production_lines.edit', ['data' => $data]);
 }
@@ -151,7 +151,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_production_lines(), array("id", "account_number", "production_lines_code"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.inv_production_lines.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_production_lines.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $checkExists = Inv_production_lines::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
 if ($checkExists != null) {
@@ -174,7 +174,7 @@ $data_to_update_account['updated_at'] = date("Y-m-d H:i:s");
 $data_to_update_account['active']=$request->active;
 $flag = update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['production_lines_code'], 'com_code' => $com_code, 'account_type' => 5));
 }
-return redirect()->route('admin.inv_production_lines.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('inv_production_lines.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -186,7 +186,7 @@ return redirect()->back()
 public function ajax_search(Request $request)
 {
 if ($request->ajax()) {
-    
+
 $com_code = auth()->user()->com_code;
 $search_by_text = $request->search_by_text;
 $searchbyradio = $request->searchbyradio;
@@ -209,7 +209,7 @@ $operator1 = "like";
 $value1 = "%{$search_by_text}%";
 }
 } else {
-//true 
+//true
 $field1 = "id";
 $operator1 = ">";
 $value1 = 0;
@@ -242,7 +242,7 @@ if($searchByactiveStatus=="all"){
     $operator3 = ">";
     $value3 = 0;
 }else{
-  
+
     $field3 = "active";
     $operator3 = "=";
     $value3 = $searchByactiveStatus;
@@ -258,7 +258,7 @@ if (!empty($data)) {
     }
     }
     }
-//General mirror 
+//General mirror
 $mirror['credit_sum']=Inv_production_lines::where($field1, $operator1, $value1)->where($field2, $operator2, $value2)->where("current_balance", "<", 0)->where($field3, $operator3, $value3)->where(['com_code' => $com_code])->sum('current_balance');
 $mirror['debit_sum']=Inv_production_lines::where($field1, $operator1, $value1)->where($field2, $operator2, $value2)->where("current_balance", ">", 0)->where($field3, $operator3, $value3)->where(['com_code' => $com_code])->sum('current_balance');
 $mirror['net']=$mirror['credit_sum']+$mirror['debit_sum'];

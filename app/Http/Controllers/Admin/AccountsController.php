@@ -91,7 +91,7 @@ $data_insert['created_at'] = date("Y-m-d H:i:s");
 $data_insert['date'] = date("Y-m-d");
 $data_insert['com_code'] = $com_code;
 Account::create($data_insert);
-return redirect()->route('admin.accounts.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('accounts.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -103,11 +103,11 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Account(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $relatediternalaccounts = Account_types::where('id', $data['account_type'])->value('relatediternalaccounts');
 if ($relatediternalaccounts == 1) {
-return redirect()->route('admin.accounts.index')->with(['error' => 'عفوا لايمكن تحديث هذا الحساب الي من شاشته الخاصه حسب نوعه']);
+return redirect()->route('accounts.index')->with(['error' => 'عفوا لايمكن تحديث هذا الحساب الي من شاشته الخاصه حسب نوعه']);
 }
 $account_types = get_cols_where(new Account_types(), array("id", "name"), array("active" => 1), 'id', 'ASC');
 $parent_accounts = get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => $com_code), 'id', 'ASC');
@@ -119,11 +119,11 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Account(), array("id", "account_number", "other_table_FK", "account_type"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $relatediternalaccounts = Account_types::where('id', $data['account_type'])->value('relatediternalaccounts');
 if ($relatediternalaccounts == 1) {
-return redirect()->route('admin.accounts.index')->with(['error' => 'عفوا لايمكن تحديث هذا الحساب الي من شاشته الخاصه حسب نوعه']);
+return redirect()->route('accounts.index')->with(['error' => 'عفوا لايمكن تحديث هذا الحساب الي من شاشته الخاصه حسب نوعه']);
 }
 $checkExists = Account::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
 if ($checkExists != null) {
@@ -141,7 +141,7 @@ $data_to_update['active'] = $request->active;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 $flag =  update(new Account(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
-return redirect()->route('admin.accounts.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('accounts.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -208,7 +208,7 @@ $operator3 = "like";
 $value3 = "%{$search_by_text}%";
 }
 } else {
-//true 
+//true
 $field3 = "id";
 $operator3 = ">";
 $value3 = 0;
