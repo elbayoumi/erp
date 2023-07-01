@@ -1,16 +1,18 @@
 <?php
-//لاتنسونا من صالح الدعاء وجزاكم الله خيرا
-//أخي الكريم هذا الكود هو اول 130 ساعة بالكورس الي نهاية الدورة الفيدو رقم  231- اما باقي أكواد الدورة الثانية للتطوير النظام موجوده بالدورة ولابد ان تكتبها بنفسك لأهميتها وللإستفادة
 
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Delegate;
-use App\Models\Admin;
-use App\Models\Account;
-use App\Models\Admin_panel_setting;
-use App\Http\Requests\DelegatesRequestAdd;
-use App\Http\Requests\DelegatesUpdateRequest;
+use App\Models\{
+    Delegate,
+    Admin,
+    Account,
+    Admin_panel_setting,
+};
+use App\Http\Requests\{
+    DelegatesRequestAdd,
+    DelegatesUpdateRequest,
+};
 class DelegatesController extends Controller
 {
 public function index()
