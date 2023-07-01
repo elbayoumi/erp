@@ -74,9 +74,9 @@ unlink('assets/admin/uploads/' . $oldphotoPath);
 }
 }
 $admin_panel_setting->save();
-return redirect()->route('admin.adminPanelSetting.index')->with(['success' => 'تم تحديث البيانات بنجاح']);
+return redirect()->route('adminPanelSetting.index')->with(['success' => 'تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
-return redirect()->route('admin.adminPanelSetting.index')->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
+return redirect()->route('adminPanelSetting.index')->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
 }
 }
 }

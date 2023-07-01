@@ -72,7 +72,7 @@ $data['added_by'] = auth()->user()->id;
 $data['com_code'] = $com_code;
 $data['date'] = date("Y-m-d");
 Admin::create($data);
-return redirect()->route('admin.admins_accounts.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('admins_accounts.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -88,12 +88,12 @@ return view('admin.admins_accounts.edit', ['data' => $data,'Permission_rols'=>$P
 }
 public function update($id, AdminRequestUpdate $request)
 {
-try { 
+try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Admin(),array("*"),array("com_code"=>$com_code,"id"=>$id));
 
 if (empty($data)) {
-return redirect()->route('admin.admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 //check if not exsits
 $checkExists_name = Admin::where(['name' => $request->name, 'com_code' => $com_code])->where('id','!=',$id)->first();
@@ -128,7 +128,7 @@ $data_to_update['active'] = $request->active;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 Admin::where(['id' => $id, 'com_code' => $com_code])->update($data_to_update);
-return redirect()->route('admin.admins_accounts.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('admins_accounts.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -142,12 +142,12 @@ public function details($id){
     $com_code=auth()->user()->com_code;
     $data=get_cols_where_row(new Admin(),array("*"),array("com_code"=>$com_code,"id"=>$id));
     if(empty($data)){
-    return redirect()->route('admin.admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
-    $data['added_by_admin']=Admin::where('id',$data['added_by'])->value('name');    
-    $data['permission_roles_name']=Admin::where('id',$data['permission_roles_id'])->value('name');    
+    $data['added_by_admin']=Admin::where('id',$data['added_by'])->value('name');
+    $data['permission_roles_name']=Admin::where('id',$data['permission_roles_id'])->value('name');
     if($data['updated_by']>0 and $data['updated_by']!=null){
-    $data['updated_by_admin']=Admin::where('id',$data['updated_by'])->value('name');    
+    $data['updated_by_admin']=Admin::where('id',$data['updated_by'])->value('name');
     }
    $treasuries=get_cols_where(new Treasuries(),array("id","name"),array("com_code"=>$com_code,"active"=>1));
    $stores=get_cols_where(new Store(),array("id","name"),array("com_code"=>$com_code,"active"=>1));
@@ -191,11 +191,11 @@ try {
 $com_code = auth()->user()->com_code;
 $data=get_cols_where_row(new Admin(),array("*"),array("com_code"=>$com_code,"id"=>$id));
 if(empty($data)){
-return redirect()->route('admin.admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $treasuries_ids=$request->treasuries_ids;
 if(empty($treasuries_ids)){
-return redirect()->route('admin.admins_accounts.details',$id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('admins_accounts.details',$id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 foreach($treasuries_ids as $info){
 $dataToInsert['com_code']=$com_code;
@@ -210,7 +210,7 @@ $dataToInsert['date'] = date("Y-m-d");
 insert(new Admins_treasuries(),$dataToInsert);
 }
 }
-return redirect()->route('admin.admins_accounts.details',$id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('admins_accounts.details',$id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -226,8 +226,8 @@ try {
     $com_code = auth()->user()->com_code;
     $data=get_cols_where_row(new Admin(),array("*"),array("com_code"=>$com_code,"id"=>$userid));
     if(empty($data)){
-    return redirect()->route('admin.admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
-    }  
+    return redirect()->route('admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    }
 $item_row = Admins_treasuries::find($rowid);
 if (!empty($item_row)) {
 $flag = $item_row->delete();
@@ -254,11 +254,11 @@ try {
 $com_code = auth()->user()->com_code;
 $data=get_cols_where_row(new Admin(),array("*"),array("com_code"=>$com_code,"id"=>$id));
 if(empty($data)){
-return redirect()->route('admin.admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $stores_ids=$request->stores_ids;
 if(empty($stores_ids)){
-return redirect()->route('admin.admins_accounts.details',$id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('admins_accounts.details',$id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 foreach($stores_ids as $info){
 $dataToInsert['com_code']=$com_code;
@@ -273,7 +273,7 @@ $dataToInsert['date'] = date("Y-m-d");
 insert(new Admins_stores(),$dataToInsert);
 }
 }
-return redirect()->route('admin.admins_accounts.details',$id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('admins_accounts.details',$id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -288,8 +288,8 @@ try {
     $com_code = auth()->user()->com_code;
     $data=get_cols_where_row(new Admin(),array("*"),array("com_code"=>$com_code,"id"=>$userid));
     if(empty($data)){
-    return redirect()->route('admin.admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
-    }  
+    return redirect()->route('admins_accounts.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    }
 
 
 $flag = delete(new Admins_stores(),array("admin_id"=>$userid,'id'=>$rowid,"com_code"=>$com_code));
@@ -300,7 +300,7 @@ return redirect()->back()
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما']);
 }
- 
+
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
@@ -333,7 +333,7 @@ $operator2 = "like";
 $value2 = "%{$search_by_name}%";
 
 } else {
-//true 
+//true
 $field2 = "id";
 $operator2 = ">";
 $value2 = 0;
