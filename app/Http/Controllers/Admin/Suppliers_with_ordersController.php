@@ -48,7 +48,7 @@ public function create()
     $com_code = auth()->user()->com_code;
  $admin_panel_settings=get_cols_where_row(new Admin_panel_setting(),array("is_set_Batches_setting"),array("com_code"=>$com_code));
 if($admin_panel_settings['is_set_Batches_setting']==0){
-    return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
+    return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
 }
 
 $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
@@ -99,7 +99,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
-return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
 $data['supplier_name'] = Supplier::where('suuplier_code', $data['suuplier_code'])->value('name');
@@ -130,10 +130,10 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
-return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_approved'] == 1) {
-return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
 $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
@@ -145,7 +145,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
-return redirect()->route('admin.suppliers_with_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_with_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $supplierData = get_cols_where_row(new Supplier(), array("account_number"), array("suuplier_code" => $request->suuplier_code, "com_code" => $com_code));
 if (empty($supplierData)) {
@@ -163,7 +163,7 @@ $data_to_update['account_number'] = $supplierData['account_number'];
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new Suppliers_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
-return redirect()->route('admin.suppliers_orders.show', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('suppliers_orders.show', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -364,9 +364,9 @@ return redirect()->back()
 }
 $flag = delete(new Suppliers_with_orders(), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if ($flag) {
-    //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف 
+    //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف
 delete(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => 1));
-return redirect()->route('admin.suppliers_orders.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('suppliers_orders.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 }
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -440,11 +440,11 @@ $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuri
 return view("admin.suppliers_with_orders.load_usershiftDiv", ['user_shift' => $user_shift]);
 }
 
-//اعتماد وترحيل فاتورة المشتريات 
+//اعتماد وترحيل فاتورة المشتريات
 function do_approve($auto_serial, Request $request)
 {
 $com_code = auth()->user()->com_code;
-//check is not approved 
+//check is not approved
 $data = get_cols_where_row(new Suppliers_with_orders(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "suuplier_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
 return redirect()->route("admin.suppliers_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
@@ -484,7 +484,7 @@ return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['err
 }
 $dataUpdateParent['what_paid'] = $request['what_paid'];
 $dataUpdateParent['what_remain'] = $request['what_remain'];
-//thaird  check for what paid 
+//thaird  check for what paid
 if ($request['what_paid'] > 0) {
 if ($request['what_paid'] > $request['total_cost']) {
 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
@@ -507,7 +507,7 @@ if ($flag) {
 //حركات  مختلفه
 //first make treasuries_transactions  action if what paid >0
 if ($request['what_paid'] > 0) {
-//first get isal number with treasuries 
+//first get isal number with treasuries
 $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
 if (empty($treasury_date)) {
 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
@@ -562,18 +562,18 @@ $quntity = $info->deliverd_quantity;
 $unit_price = $info->unit_price;
 } else {
 // if is retail  لو كان بوحده الابن التجزئة
-//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما 
+//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما
 $quntity = ($info->deliverd_quantity / $itemCard_Data['retail_uom_quntToParent']);
 $unit_price = $info->unit_price * $itemCard_Data['retail_uom_quntToParent'];
 }
-//بندخل الكميات للمخزن بوحده القياس الاب  اجباري 
+//بندخل الكميات للمخزن بوحده القياس الاب  اجباري
 //لو الصنف استهلاكي له تاريخ صلاحيه وانتاج فبعمل تحقق بسعر الشراء مع التواريخ
 //لو الصنف  غير استهلاكي يبقي بعمل تحقق فقط بسعر الشراء
 
 $admin_panel_settings=get_cols_where_row(new Admin_panel_setting(),array("Batches_setting_type"),array("com_code"=>$com_code));
 
 if ($info->item_card_type == 2) {
-//استهلاكي بتواريخ 
+//استهلاكي بتواريخ
 $dataInsertBatch["store_id"] = $data['store_id'];
 $dataInsertBatch["item_code"] = $info->item_code;
 $dataInsertBatch["production_date"] = $info->production_date;
@@ -592,7 +592,7 @@ if($admin_panel_settings['Batches_setting_type']==1){
 $OldBatchExsists = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), $dataInsertBatch);
 }else{
     $OldBatchExsists = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), array("item_code"=>$info->item_code,"com_code"=>$com_code));
-    
+
 }
 
 
@@ -603,7 +603,7 @@ if($admin_panel_settings['Batches_setting_type']==1){
 $dataUpdateOldBatch['total_cost_price'] = $OldBatchExsists['unit_cost_price'] * $dataUpdateOldBatch['quantity'];
 }else{
     $dataUpdateOldBatch['total_cost_price'] = $unit_price* $dataUpdateOldBatch['quantity'];
-    $dataUpdateOldBatch['unit_cost_price']=$unit_price; 
+    $dataUpdateOldBatch['unit_cost_price']=$unit_price;
 }
 
 $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
@@ -650,18 +650,18 @@ $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
 $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
 $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
 insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
-//item Move Card حركة الصنف 
+//item Move Card حركة الصنف
 }
 //update last Cost price   تحديث اخر سعر شراء للصنف
 if ($info->isparentuom == 1) {
-//لو الوحده اللي اشتريت بيها كانت وحده اب 
+//لو الوحده اللي اشتريت بيها كانت وحده اب
 $dataUpdateItemCardCosts['cost_price'] = $info->unit_price;
 if ($itemCard_Data['does_has_retailunit'] == 1) {
 $dataUpdateItemCardCosts['cost_price_retail'] = $info->unit_price / $itemCard_Data['retail_uom_quntToParent'];
 }
 } else {
 // if is retail  لو كان بوحده الابن التجزئة
-//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما 
+//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما
 $dataUpdateItemCardCosts['cost_price'] = $info->unit_price * $itemCard_Data['retail_uom_quntToParent'];
 $dataUpdateItemCardCosts['cost_price_retail'] = $info->unit_price;
 }
@@ -736,7 +736,7 @@ $operator5 = "=";
 $value5 = $search_by_text;
 }
 } else {
-//true 
+//true
 $field5 = "id";
 $operator5 = ">";
 $value5 = 0;
@@ -762,7 +762,7 @@ try {
 $com_code = auth()->user()->com_code;
 $invoice_data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($invoice_data)) {
-return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $invoice_data['added_by_admin'] = Admin::where('id', $invoice_data['added_by'])->value('name');
 $invoice_data['supplier_name'] = Supplier::where('suuplier_code', $invoice_data['suuplier_code'])->value('name');

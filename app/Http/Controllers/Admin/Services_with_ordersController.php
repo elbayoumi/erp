@@ -101,7 +101,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
 if($data['is_account_number']==1){
@@ -196,7 +196,7 @@ return redirect()->back()
 $flag = delete(new services_with_orders(), array("id" => $id, "com_code" => $com_code));
 if ($flag) {
 delete(new services_with_orders_details(), array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' =>$parent_pill_data['order_type']));
-return redirect()->route('admin.Services_orders.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('Services_orders.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 }
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -210,10 +210,10 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_approved'] == 1) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 
 $accounts = get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code,'is_parent'=>0), 'id', 'DESC');
@@ -229,10 +229,10 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_approved'] == 1) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 
 if($request->is_account_number==1){
@@ -265,7 +265,7 @@ $data_to_update['pill_type'] = $request->pill_type;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new services_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code));
-return redirect()->route('admin.Services_orders.show', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('Services_orders.show', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -289,7 +289,7 @@ if ($request->ajax()) {
         }
 
     }
- 
+
 return view("admin.services_with_orders.reload_parent_pill", ['data' => $data]);
 }
 }
@@ -320,10 +320,10 @@ try {
 $com_code = auth()->user()->com_code;
 $parent_pill_data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $parent_id, "com_code" => $com_code));
 if (empty($parent_pill_data)) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($parent_pill_data['is_approved'] == 1) {
-return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 $item_row = services_with_orders_details::find($id);
 if (!empty($item_row)) {
@@ -431,11 +431,11 @@ return view("admin.services_with_orders.load_usershiftDiv", ['user_shift' => $us
 }
 
 
-//اعتماد وترحيل فاتورة خدمات 
+//اعتماد وترحيل فاتورة خدمات
 function do_approve($id, Request $request)
 {
 $com_code = auth()->user()->com_code;
-//check is not approved 
+//check is not approved
 $data = get_cols_where_row(new services_with_orders(), array("total_services", "is_approved", "id", "account_number","auto_serial","order_type","is_account_number","entity_name"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
 return redirect()->route("admin.Services_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
@@ -483,7 +483,7 @@ return redirect()->route("admin.Services_orders.show", $data['id'])->with(['erro
 }
 $dataUpdateParent['what_paid'] = $request['what_paid'];
 $dataUpdateParent['what_remain'] = $request['what_remain'];
-//thaird  check for what paid 
+//thaird  check for what paid
 if ($request['what_paid'] > 0) {
 if ($request['what_paid'] > $request['total_cost']) {
 return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
@@ -525,7 +525,7 @@ return redirect()->route("admin.Services_orders.show", $data['id'])->with(['erro
 $flag = update(new services_with_orders(), $dataUpdateParent, array("id" => $id, "com_code" => $com_code, 'is_approved' => 0));
 if ($flag) {
 
-    if($data['is_account_number']==1){ 
+    if($data['is_account_number']==1){
         $account_type = Account::where(["account_number" => $data['account_number']])->value("account_type");
 
         if($account_type==2){
@@ -550,7 +550,7 @@ if ($flag) {
 //حركات  مختلفه
 //first make treasuries_transactions  action if what paid >0
 if ($request['what_paid'] > 0) {
-//first get isal number with treasuries 
+//first get isal number with treasuries
 if($data['order_type']==1){
     $dataInsert_treasuries_transactions['isal_number'] = $treasury_date['last_isal_exhcange'] + 1;
     $dataInsert_treasuries_transactions['mov_type'] = 27;
@@ -638,7 +638,7 @@ return redirect()->route("admin.Services_orders.show", $data['id'])->with(['succ
 public function ajax_search(Request $request)
 {
 if ($request->ajax()) {
-  
+
 $search_by_text = $request->search_by_text;
 $account_number = $request->account_number;
 $is_account_number = $request->is_account_number;
@@ -702,7 +702,7 @@ $operator5 = "=";
 $value5 = $search_by_text;
 }
 } else {
-//true 
+//true
 $field5 = "id";
 $operator5 = ">";
 $value5 = 0;
@@ -746,14 +746,14 @@ public function printsaleswina4($id,$size){
     $com_code = auth()->user()->com_code;
     $invoice_data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
     if (empty($invoice_data)) {
-    return redirect()->route('admin.Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
-   
+
     $invoice_data['added_by_admin'] = Admin::where('id', $invoice_data['added_by'])->value('name');
     if($invoice_data['is_account_number']==1){
     $invoice_data['account_name'] = Account::where('account_number', $invoice_data['account_number'])->value('name');
     }
-  
+
     $invoices_details = get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $invoice_data['auto_serial'], 'order_type' => $invoice_data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
     if (!empty($invoices_details)) {
         foreach ($invoices_details as $info) {
@@ -766,21 +766,21 @@ public function printsaleswina4($id,$size){
         }
 
 
-   
+
     $systemData=get_cols_where_row(new Admin_panel_setting(),array("system_name","phone","address","photo"),array("com_code"=>$com_code));
-    
+
     if($size=="A4"){
         return view('admin.services_with_orders.printsaleswina4',['data'=>$invoice_data,'systemData'=>$systemData,'invoices_details'=>$invoices_details]);
     }else{
         return view('admin.services_with_orders.printsaleswina6',['data'=>$invoice_data,'systemData'=>$systemData,'invoices_details'=>$invoices_details]);
-    
+
     }
     } catch (\Exception $ex) {
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
     }
     }
-    
+
 
 
 

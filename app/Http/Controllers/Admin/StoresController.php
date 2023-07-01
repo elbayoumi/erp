@@ -45,7 +45,7 @@ $data['added_by'] = auth()->user()->id;
 $data['com_code'] = $com_code;
 $data['date'] = date("Y-m-d");
 Store::create($data);
-return redirect()->route('admin.stores.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('stores.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } else {
 return redirect()->back()
 ->with(['error' => 'عفوا اسم المخزن مسجل من قبل'])
@@ -69,7 +69,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = Store::select()->find($id);
 if (empty($data)) {
-return redirect()->route('admin.sales_matrial_types.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('sales_matrial_types.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $checkExists = Store::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
 if ($checkExists != null) {
@@ -84,7 +84,7 @@ $data_to_update['active'] = $request->active;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 Store::where(['id' => $id, 'com_code' => $com_code])->update($data_to_update);
-return redirect()->route('admin.stores.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('stores.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])

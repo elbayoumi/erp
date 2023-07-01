@@ -47,7 +47,7 @@ public function create()
 $com_code = auth()->user()->com_code;
 $admin_panel_settings=get_cols_where_row(new Admin_panel_setting(),array("is_set_Batches_setting"),array("com_code"=>$com_code));
 if($admin_panel_settings['is_set_Batches_setting']==0){
-   return redirect()->route('admin.suppliers_orders_general_return.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
+   return redirect()->route('suppliers_orders_general_return.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
 }
 
 $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
@@ -95,10 +95,10 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 3));
 if (empty($data)) {
-return redirect()->route('admin.suppliers_orders_general_return.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_orders_general_return.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_approved'] == 1) {
-return redirect()->route('admin.suppliers_orders_general_return.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('suppliers_orders_general_return.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
 $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
@@ -111,7 +111,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved","auto_serial"), array("id" => $id, "com_code" => $com_code, 'order_type' => 3));
 if (empty($data)) {
-return redirect()->route('admin.suppliers_orders_general_return.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_orders_general_return.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $supplierData = get_cols_where_row(new Supplier(), array("account_number"), array("suuplier_code" => $request->suuplier_code, "com_code" => $com_code));
 if (empty($supplierData)) {
@@ -126,7 +126,7 @@ if($request->has('store_id')){
 if($request->store_id==""){
 return redirect()->back()
 ->with(['error' => 'عفوا يجب  اختيار مخزن الصرف للمرتجع'])
-->withInput(); 
+->withInput();
 }
 $data_to_update['store_id'] = $request->store_id;
 }
@@ -138,7 +138,7 @@ $data_to_update['account_number'] = $supplierData['account_number'];
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new Suppliers_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 3));
-return redirect()->route('admin.suppliers_orders_general_return.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('suppliers_orders_general_return.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -171,13 +171,13 @@ if ($flag) {
 //حنلف علي الاصناف المضافه علي الفاتورة ونطبق عليهم نفس اللي عملناها في حذف تفاصيل عنصر علي الفاتورة
 if(!empty($items_details)){
 foreach($items_details as $info){
-    //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف  
+    //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف
 $flagDelete=delete(new Suppliers_with_orders_details(),array("com_code"=>$com_code,"order_type"=>3,"suppliers_with_orders_auto_serial"=>$parent_pill_data['auto_serial'],'id'=>$info->id));
 if($flagDelete){
 $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit","item_type"), array("com_code" => $com_code, "item_code" => $info->item_code));
 $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id","production_date","expired_date"), array("com_code" => $com_code, "auto_serial" => $info->batch_auto_serial, 'store_id' => $parent_pill_data['store_id'], 'item_code' => $info->item_code));
 if (!empty($itemCard_Data) and !empty($batch_data)) {
-//خصم الكمية من الباتش 
+//خصم الكمية من الباتش
 //كمية الصنف بكل المخازن قبل الحركة
 $quantityBeforMove = get_sum_where(
 new Inv_itemcard_batches(),
@@ -265,7 +265,7 @@ $itemCard_Data['retail_uom_quntToParent']
 }
 }
 }
-return redirect()->route('admin.suppliers_orders_general_return.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('suppliers_orders_general_return.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 }
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -279,7 +279,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 3));
 if (empty($data)) {
-return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
 $data['supplier_name'] = Supplier::where('suuplier_code', $data['suuplier_code'])->value('name');
@@ -419,7 +419,7 @@ echo json_encode("done");
 }
 }
 public function delete_details($id, $parent_id)
-{ 
+{
 try {
 $com_code = auth()->user()->com_code;
 $parent_pill_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "auto_serial","store_id","suuplier_code"), array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 3));
@@ -442,7 +442,7 @@ $this->recalclate_parent_invoice($parent_pill_data['auto_serial']);
 $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit","item_type"), array("com_code" => $com_code, "item_code" => $item_row['item_code']));
 $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id","production_date","expired_date"), array("com_code" => $com_code, "auto_serial" => $item_row['batch_auto_serial'], 'store_id' => $parent_pill_data['store_id'], 'item_code' => $item_row['item_code']));
 if (!empty($itemCard_Data) and !empty($batch_data)) {
-//خصم الكمية من الباتش 
+//خصم الكمية من الباتش
 //كمية الصنف بكل المخازن قبل الحركة
 $quantityBeforMove = get_sum_where(
 new Inv_itemcard_batches(),
@@ -570,11 +570,11 @@ $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuri
 }
 return view("admin.suppliers_orders_general_return.load_usershiftDiv", ['user_shift' => $user_shift]);
 }
-//اعتماد وترحيل فاتورة المشتريات 
+//اعتماد وترحيل فاتورة المشتريات
 function do_approve($auto_serial, Request $request)
 {
 $com_code = auth()->user()->com_code;
-//check is not approved 
+//check is not approved
 $data = get_cols_where_row(new Suppliers_with_orders(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "suuplier_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 3));
 if (empty($data)) {
 return redirect()->route("admin.suppliers_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
@@ -614,7 +614,7 @@ return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['err
 }
 $dataUpdateParent['what_paid'] = $request['what_paid'];
 $dataUpdateParent['what_remain'] = $request['what_remain'];
-//thaird  check for what paid 
+//thaird  check for what paid
 if ($request['what_paid'] > 0) {
 if ($request['what_paid'] > $request['total_cost']) {
 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
@@ -633,7 +633,7 @@ if ($flag) {
 //حركات  مختلفه
 //first make treasuries_transactions  action if what paid >0
 if ($request['what_paid'] > 0) {
-//first get isal number with treasuries 
+//first get isal number with treasuries
 $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
 if (empty($treasury_date)) {
 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
@@ -734,7 +734,7 @@ $operator5 = "=";
 $value5 = $search_by_text;
 }
 } else {
-//true 
+//true
 $field5 = "id";
 $operator5 = ">";
 $value5 = 0;
@@ -802,12 +802,12 @@ return view("admin.suppliers_orders_general_return.get_item_batches", ['item_car
 
 
 public function Add_item_to_invoice(Request $request)
-{ 
+{
 try {
-if ($request->ajax()) { 
+if ($request->ajax()) {
 $com_code = auth()->user()->com_code;
 $invoice_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "order_date", "suuplier_code","id"), array("com_code" => $com_code, "auto_serial" => $request->autoserailparent,'order_type'=>3));
-if (!empty($invoice_data)) {  
+if (!empty($invoice_data)) {
 if ($invoice_data['is_approved'] == 0) {
 $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id","production_date","expired_date"), array("com_code" => $com_code, "auto_serial" => $request->inv_itemcard_batches_autoserial, 'store_id' => $request->store_id, 'item_code' => $request->item_code));
 if (!empty($batch_data)) {
@@ -835,7 +835,7 @@ $datainsert_items['com_code'] = $com_code;
 $flag_datainsert_items = insert(new Suppliers_with_orders_details(), $datainsert_items, true);
 if (!empty($flag_datainsert_items)) {
 $this->recalclate_parent_invoice($request->autoserailparent);
-//خصم الكمية من الباتش 
+//خصم الكمية من الباتش
 //كمية الصنف بكل المخازن قبل الحركة
 $quantityBeforMove = get_sum_where(
 new Inv_itemcard_batches(),
@@ -956,7 +956,7 @@ public function printsaleswina4($id,$size){
     $com_code = auth()->user()->com_code;
     $invoice_data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 3));
     if (empty($invoice_data)) {
-    return redirect()->route('admin.suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
     $invoice_data['added_by_admin'] = Admin::where('id', $invoice_data['added_by'])->value('name');
     $invoice_data['supplier_name'] = Supplier::where('suuplier_code', $invoice_data['suuplier_code'])->value('name');
@@ -970,19 +970,19 @@ public function printsaleswina4($id,$size){
     }
     }
     $systemData=get_cols_where_row(new Admin_panel_setting(),array("system_name","phone","address","photo"),array("com_code"=>$com_code));
-    
+
     if($size=="A4"){
         return view('admin.suppliers_orders_general_return.printsaleswina4',['data'=>$invoice_data,'systemData'=>$systemData,'sales_invoices_details'=>$invoices_details]);
     }else{
         return view('admin.suppliers_orders_general_return.printsaleswina6',['data'=>$invoice_data,'systemData'=>$systemData,'sales_invoices_details'=>$invoices_details]);
-    
+
     }
     } catch (\Exception $ex) {
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
     }
     }
-    
+
 
 
 }

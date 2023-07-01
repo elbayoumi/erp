@@ -124,7 +124,7 @@ $data_insert_account['com_code'] = $com_code;
 $data_insert_account['other_table_FK'] = $data_insert['suuplier_code'];
 $flag = insert(new Account(), $data_insert_account);
 }
-return redirect()->route('admin.supplier.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('supplier.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -144,7 +144,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Supplier(), array("id", "account_number", "suuplier_code"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.supplier.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('supplier.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $checkExists = Supplier::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
 if ($checkExists != null) {
@@ -167,7 +167,7 @@ $data_to_update_account['updated_by'] = auth()->user()->id;
 $data_to_update_account['updated_at'] = date("Y-m-d H:i:s");
 $flag = update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['suuplier_code'], 'com_code' => $com_code, 'account_type' => 2));
 }
-return redirect()->route('admin.supplier.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('supplier.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -224,7 +224,7 @@ $operator1 = "like";
 $value1 = "%{$search_by_text}%";
 }
 } else {
-//true 
+//true
 $field1 = "id";
 $operator1 = ">";
 $value1 = 0;
@@ -258,7 +258,7 @@ if($searchByactiveStatus=="all"){
     $operator3 = ">";
     $value3 = 0;
 }else{
-  
+
     $field3 = "active";
     $operator3 = "=";
     $value3 = $searchByactiveStatus;
@@ -276,7 +276,7 @@ $info->updated_by_admin = Admin::where('id', $info->updated_by)->value('name');
 }
 }
 }
-//General mirror 
+//General mirror
 $mirror['credit_sum']=Supplier::where($field1, $operator1, $value1)->where($field2, $operator2, $value2)->where("current_balance", "<", 0)->where($field3, $operator3, $value3)->where(['com_code' => $com_code])->sum('current_balance');
 $mirror['debit_sum']=Supplier::where($field1, $operator1, $value1)->where($field2, $operator2, $value2)->where("current_balance", ">", 0)->where($field3, $operator3, $value3)->where(['com_code' => $com_code])->sum('current_balance');
 $mirror['net']=$mirror['credit_sum']+$mirror['debit_sum'];

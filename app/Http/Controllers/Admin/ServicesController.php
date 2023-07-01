@@ -45,7 +45,7 @@ $data['added_by'] = auth()->user()->id;
 $data['com_code'] = $com_code;
 $data['date'] = date("Y-m-d");
 insert(new Services(),$data);
-return redirect()->route('admin.Services.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('Services.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } else {
 return redirect()->back()
 ->with(['error' => 'عفوا اسم الخدمة مسجل من قبل'])
@@ -88,7 +88,7 @@ $data_to_update['active'] = $request->active;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new Services(),$data_to_update,array('id' => $id, 'com_code' => $com_code));
-return redirect()->route('admin.Services.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('Services.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
