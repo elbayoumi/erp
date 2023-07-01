@@ -38,7 +38,7 @@ public function create()
 $com_code = auth()->user()->com_code;
 $admin_panel_settings=get_cols_where_row(new Admin_panel_setting(),array("is_set_Batches_setting"),array("com_code"=>$com_code));
 if($admin_panel_settings['is_set_Batches_setting']==0){
-   return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
+   return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
 }
 $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code,'active'=>1), 'id', 'ASC');
 return view('admin.inv_stores_inventory.create', ['stores' => $stores]);
@@ -81,19 +81,19 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
 }
 $counterAddedDetails=get_count_where(new Inv_stores_inventory_details(),array("inv_stores_inventory_auto_serial"=>$data['auto_serial'],'com_code'=>$com_code,'is_closed'=>1));
 if ($counterAddedDetails > 0) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا لايمكن حذف  امر جرد قد تم اعتماد اصناف عليه  ']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن حذف  امر جرد قد تم اعتماد اصناف عليه  ']);
 }
 $flag = delete(new Inv_stores_inventory(), array("id" => $id, "com_code" => $com_code));
 if ($flag) {
 delete(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], "com_code" => $com_code));
-return redirect()->route('admin.stores_inventory.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('stores_inventory.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 }
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -105,10 +105,10 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
 }
 $counterAddedDetails=get_count_where(new Inv_stores_inventory_details(),array("inv_stores_inventory_auto_serial"=>$data['auto_serial'],'com_code'=>$com_code));
 if($counterAddedDetails==0){
@@ -124,10 +124,10 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
 }
 $counterSameStoreOpened=Inv_stores_inventory::where('id','!=',$id)->where('com_code','=',$com_code)->where('store_id','=',$request->store_id)->count();
 if($counterSameStoreOpened>0){
@@ -145,7 +145,7 @@ $data_to_update['notes'] = $request->notes;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new Inv_stores_inventory(), $data_to_update, array("id" => $id, "com_code" => $com_code));
-return redirect()->route('admin.stores_inventory.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('stores_inventory.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -158,7 +158,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
 $data['store_name'] = Store::where('id', $data['store_id'])->value('name');
@@ -199,10 +199,10 @@ if ($_POST) {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_closed']==1) {
-return redirect()->route('admin.stores_inventory.show',$id)->with(['error' => 'عفوا لايمكن الاضافة علي امر جرد مغلق ومرحل !']);
+return redirect()->route('stores_inventory.show',$id)->with(['error' => 'عفوا لايمكن الاضافة علي امر جرد مغلق ومرحل !']);
 }
 if($_POST['does_add_all_items']==1){
 $items_in_store=Inv_itemcard_batches::where("com_code","=",$com_code)->where("store_id","=",$data['store_id'])->orderby('item_code','ASC')->distinct()->get(['item_code']);
@@ -244,7 +244,7 @@ $flag = insert(new Inv_stores_inventory_details(), $data_insert);
 $data_to_update_parent['total_cost_batches']=get_sum_where(new Inv_stores_inventory_details(),'total_cost_price',array("com_code"=>$com_code,'inv_stores_inventory_auto_serial'=>$data['auto_serial']));
 update(new Inv_stores_inventory(),$data_to_update_parent,array("com_code"=>$com_code,"id" => $id,'is_closed'=>0));
 }
-return redirect()->route('admin.stores_inventory.show',$id)->with(['success' => 'تم اضافة البيانات بنجاح']);
+return redirect()->route('stores_inventory.show',$id)->with(['success' => 'تم اضافة البيانات بنجاح']);
 }
 public function load_edit_item_details(Request $request)
 {
@@ -265,17 +265,17 @@ if ($_POST) {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $parent_pill_id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_closed']==1) {
-return redirect()->route('admin.stores_inventory.show',$parent_pill_id)->with(['error' => 'عفوا لايمكن الاضافة علي امر جرد مغلق ومرحل !']);
+return redirect()->route('stores_inventory.show',$parent_pill_id)->with(['error' => 'عفوا لايمكن الاضافة علي امر جرد مغلق ومرحل !']);
 }
 $dataDetails = get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $id, "com_code" => $com_code,'inv_stores_inventory_auto_serial'=>$data['auto_serial']));
 if (empty($dataDetails)) {
-return redirect()->route('admin.stores_inventory.show',$parent_pill_id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.show',$parent_pill_id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($dataDetails['is_closed']==1) {
-return redirect()->route('admin.stores_inventory.show',$parent_pill_id)->with(['error' => 'عفوا لايمكن تحديث علي صنف جرد مغلق ومرحل !']);
+return redirect()->route('stores_inventory.show',$parent_pill_id)->with(['error' => 'عفوا لايمكن تحديث علي صنف جرد مغلق ومرحل !']);
 }
 $dataUpdateDetails['new_quantity']=$request->new_quantity_edit;
 $dataUpdateDetails['diffrent_quantity']=($request->new_quantity_edit-$dataDetails['old_quantity']);
@@ -287,7 +287,7 @@ update(new Inv_stores_inventory_details(),$dataUpdateDetails,array("com_code"=>$
 $data_to_update_parent['total_cost_batches']=get_sum_where(new Inv_stores_inventory_details(),'total_cost_price',array("com_code"=>$com_code,'inv_stores_inventory_auto_serial'=>$data['auto_serial']));
 update(new Inv_stores_inventory(),$data_to_update_parent,array("com_code"=>$com_code,"id" => $parent_pill_id,'is_closed'=>0));
 }
-return redirect()->route('admin.stores_inventory.show',$parent_pill_id)->with(['success' => 'تم تحديث البيانات بنجاح']);
+return redirect()->route('stores_inventory.show',$parent_pill_id)->with(['success' => 'تم تحديث البيانات بنجاح']);
 }
 public function delete_details($id,$id_parent)
 {
@@ -295,25 +295,25 @@ try {
 $com_code = auth()->user()->com_code;
 $data_parent = get_cols_where_row(new Inv_stores_inventory(), array("is_closed","auto_serial"), array("id" => $id_parent, "com_code" => $com_code));
 if (empty($data_parent)) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data_parent['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
 }
 $Data_item_details=get_cols_where_row(new Inv_stores_inventory_details(),array("is_closed"),array("id"=>$id,'com_code'=>$com_code,'inv_stores_inventory_auto_serial'=>$data_parent['auto_serial']));
 if (empty($Data_item_details)) {
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($Data_item_details['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد لصنف مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد لصنف مغلق ومرحل  ']);
 }
 
-    //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف  
+    //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف
 $flag = delete(new Inv_stores_inventory_details(), array("id"=>$id,'com_code'=>$com_code,'inv_stores_inventory_auto_serial'=>$data_parent['auto_serial'],'is_closed'=>0));
 if ($flag) {
 $data_to_update_parent['total_cost_batches']=get_sum_where(new Inv_stores_inventory_details(),'total_cost_price',array("com_code"=>$com_code,'inv_stores_inventory_auto_serial'=>$data_parent['auto_serial']));
 update(new Inv_stores_inventory(),$data_to_update_parent,array("com_code"=>$com_code,"id" => $id_parent,'is_closed'=>0));
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 }
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -326,17 +326,17 @@ try {
 $com_code = auth()->user()->com_code;
 $data_parent = get_cols_where_row(new Inv_stores_inventory(), array("is_closed","auto_serial","store_id"), array("id" => $id_parent, "com_code" => $com_code));
 if (empty($data_parent)) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data_parent['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
 }
 $Data_item_details=get_cols_where_row(new Inv_stores_inventory_details(),array("*"),array("id"=>$id,'com_code'=>$com_code,'inv_stores_inventory_auto_serial'=>$data_parent['auto_serial']));
 if (empty($Data_item_details)) {
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($Data_item_details['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد لصنف مغلق ومرحل  ']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد لصنف مغلق ومرحل  ']);
 }
 //first we update Old pathc with new quantity
 //كمية الصنف بكل المخازن قبل الحركة
@@ -421,7 +421,7 @@ $itemCard_Data['retail_uom_quntToParent']
 }
 }
 }
-return redirect()->route('admin.stores_inventory.show',$id_parent)->with(['success' => 'لقد تم ترحيل الباتش بنجاح']);
+return redirect()->route('stores_inventory.show',$id_parent)->with(['success' => 'لقد تم ترحيل الباتش بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
@@ -433,10 +433,10 @@ try {
 $com_code = auth()->user()->com_code;
 $data_parent = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code,'is_closed'=>0));
 if (empty($data_parent)) {
-return redirect()->route('admin.inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data_parent['is_closed'] == 1) {
-return redirect()->route('admin.stores_inventory.index')->with(['error' => 'عفوا لايمكن اغلاق امر جرد قد تم اغلاقه من قبل   ']);
+return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن اغلاق امر جرد قد تم اغلاقه من قبل   ']);
 }
 $details = get_cols_where(new inv_stores_inventory_details(), array("id"), array('inv_stores_inventory_auto_serial' => $data_parent['auto_serial'], 'com_code' => $com_code,'is_closed'=>0), 'id', 'ASC');
 if (!empty($details)) {
@@ -533,7 +533,7 @@ $dataUpdateparent['is_closed']=1;
 $dataUpdateparent['cloased_by'] = auth()->user()->id;
 $dataUpdateparent['closed_at'] = date("Y-m-d H:i:s");
 $flag= update(new Inv_stores_inventory(),$dataUpdateparent,array("id"=>$id,'com_code'=>$com_code));
-return redirect()->route('admin.stores_inventory.show',$id)->with(['success' => 'لقد تم ترحيل واغلاق امر الجرد بنجاح']);
+return redirect()->route('stores_inventory.show',$id)->with(['success' => 'لقد تم ترحيل واغلاق امر الجرد بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
@@ -585,7 +585,7 @@ if ($store_id_search == 'all') {
     $operator3 = "=";
     $value3 = $store_id_search;
     }
-    
+
 
 
 if ($order_date_form == '') {
@@ -643,7 +643,7 @@ public function printsaleswina4($id,$size){
     $com_code = auth()->user()->com_code;
     $invoice_data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
     if (empty($invoice_data)) {
-    return redirect()->route('admin.inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
     $invoice_data['store_name'] = Store::where('id', $invoice_data['store_id'])->value('name');
 
@@ -662,21 +662,21 @@ public function printsaleswina4($id,$size){
         }
 
 
-   
+
     $systemData=get_cols_where_row(new Admin_panel_setting(),array("system_name","phone","address","photo"),array("com_code"=>$com_code));
-    
+
     if($size=="A4"){
         return view('admin.inv_stores_inventory.printsaleswina4',['data'=>$invoice_data,'systemData'=>$systemData,'invoices_details'=>$invoices_details]);
     }else{
         return view('admin.inv_stores_inventory.printsaleswina6',['data'=>$invoice_data,'systemData'=>$systemData,'invoices_details'=>$invoices_details]);
-    
+
     }
     } catch (\Exception $ex) {
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
     }
     }
-    
+
 
 
 }

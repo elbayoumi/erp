@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 class Inv_stores_transferIncomingController extends Controller
 {
 public function index()
-{ 
+{
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_p(new inv_stores_transfer(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
 if (!empty($data)) {
@@ -39,7 +39,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new inv_stores_transfer(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.inv_stores_transfer.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_stores_transfer.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
 $data['from_store_name'] = Store::where('id', $data['transfer_from_store_id'])->value('name');
@@ -64,11 +64,11 @@ return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
 }
 }
-//اعتماد واستلام كمية صنف 
+//اعتماد واستلام كمية صنف
 function approve_one_details($id,$id_parent, Request $request)
 {
 $com_code = auth()->user()->com_code;
-//check is not approved 
+//check is not approved
 $data = get_cols_where_row(new inv_stores_transfer(), array( "auto_serial", "transfer_from_store_id", "transfer_to_store_id", "is_approved"), array("id" => $id_parent, "com_code" => $com_code));
 if (empty($data)) {
 return redirect()->route("admin.inv_stores_transfer_incoming.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
@@ -102,11 +102,11 @@ $quntity = $info->deliverd_quantity;
 $unit_price = $info->unit_price;
 } else {
 // if is retail  لو كان بوحده الابن التجزئة
-//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما 
+//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما
 $quntity = ($info->deliverd_quantity / $itemCard_Data['retail_uom_quntToParent']);
 $unit_price = $info->unit_price * $itemCard_Data['retail_uom_quntToParent'];
 }
-//بندخل الكميات للمخزن بوحده القياس الاب  اجباري 
+//بندخل الكميات للمخزن بوحده القياس الاب  اجباري
 $dataInsertBatch["store_id"] = $data['transfer_to_store_id'];
 $dataInsertBatch["item_code"] = $info->item_code;
 $dataInsertBatch["production_date"] = $info->production_date;
@@ -169,7 +169,7 @@ $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
 $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
 $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
 insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
-//item Move Card حركة الصنف 
+//item Move Card حركة الصنف
 }
 // update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
 do_update_itemCardQuantity(new Inv_itemCard(), $info->item_code, new Inv_itemcard_batches(), $itemCard_Data['does_has_retailunit'], $itemCard_Data['retail_uom_quntToParent']);
@@ -186,11 +186,11 @@ $data = get_cols_where_row(new inv_stores_transfer_details(), array("is_approved
 return view("admin.inv_stores_transfer_incoming.load_cancel_one_details", ['parent_pill_data' => $parent_pill_data, 'data' => $data]);
 }
 }
-//اعتماد وترحيل فاتورة المشتريات 
+//اعتماد وترحيل فاتورة المشتريات
 function do_cancel_one_details($id,$id_parent, Request $request)
 {
 $com_code = auth()->user()->com_code;
-//check is not approved 
+//check is not approved
 $data = get_cols_where_row(new inv_stores_transfer(), array( "auto_serial", "transfer_from_store_id", "transfer_to_store_id", "is_approved"), array("id" => $id_parent, "com_code" => $com_code));
 if (empty($data)) {
 return redirect()->route("admin.inv_stores_transfer_incoming.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
@@ -273,7 +273,7 @@ $field5 = "auto_serial";
 $operator5 = "=";
 $value5 = $search_by_text;
 } else {
-//true 
+//true
 $field5 = "id";
 $operator5 = ">";
 $value5 = 0;
@@ -311,7 +311,7 @@ public function printsaleswina4($id,$size){
     $com_code = auth()->user()->com_code;
     $invoice_data = get_cols_where_row(new inv_stores_transfer(), array("*"), array("id" => $id, "com_code" => $com_code));
     if (empty($invoice_data)) {
-    return redirect()->route('admin.inv_stores_transfer_incoming.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('inv_stores_transfer_incoming.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
  $invoice_data['added_by_admin'] = Admin::where('id', $invoice_data['added_by'])->value('name');
 $invoice_data['from_store_name'] = Store::where('id', $invoice_data['transfer_from_store_id'])->value('name');
@@ -325,19 +325,19 @@ $invoice_data['to_store_name'] = Store::where('id', $invoice_data['transfer_to_s
     }
     }
     $systemData=get_cols_where_row(new Admin_panel_setting(),array("system_name","phone","address","photo"),array("com_code"=>$com_code));
-    
+
     if($size=="A4"){
         return view('admin.inv_stores_transfer_incoming.printsaleswina4',['data'=>$invoice_data,'systemData'=>$systemData,'sales_invoices_details'=>$invoices_details]);
     }else{
         return view('admin.inv_stores_transfer_incoming.printsaleswina6',['data'=>$invoice_data,'systemData'=>$systemData,'sales_invoices_details'=>$invoices_details]);
-    
+
     }
     } catch (\Exception $ex) {
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
     }
     }
-    
+
 
 
 

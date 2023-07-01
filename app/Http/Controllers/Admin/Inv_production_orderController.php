@@ -28,7 +28,7 @@ if ($info->is_approved==1) {
     if ($info->is_closed==1) {
         $info->closed_by_admin = Admin::where('id', $info->closed_by)->value('name');
         }
-    
+
 
 }
 }
@@ -57,7 +57,7 @@ $data['added_by'] = auth()->user()->id;
 $data['com_code'] = $com_code;
 $data['date'] = date("Y-m-d");
 insert(new Inv_production_order(),$data);
-return redirect()->route('admin.inv_production_order.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('inv_production_order.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -70,10 +70,10 @@ public function edit($id)
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_production_order(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.inv_production_order.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_production_order.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_closed'] == 1) {
-return redirect()->route('admin.inv_production_order.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('inv_production_order.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 return view('admin.inv_production_order.edit', ['data' => $data]);
 
@@ -86,10 +86,10 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_production_order(), array("*"), array("id" => $id, "com_code" => $com_code));
 if (empty($data)) {
-return redirect()->route('admin.inv_production_order.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_production_order.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if($data['is_closed'] == 1) {
-return redirect()->route('admin.inv_production_order.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('inv_production_order.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 
 $data_to_update['production_plan_date'] = $request->production_plan_date;
@@ -97,7 +97,7 @@ $data_to_update['production_plane'] = $request->production_plane;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new Inv_production_order(), $data_to_update, array("id" => $id, "com_code" => $com_code));
-return redirect()->route('admin.inv_production_order.index', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('inv_production_order.index', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -123,7 +123,7 @@ return redirect()->back()
 
 $flag = delete(new Inv_production_order(), array("id" => $id, "com_code" => $com_code));
 if ($flag) {
-return redirect()->route('admin.inv_production_order.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('inv_production_order.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 }
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -165,14 +165,14 @@ if ($data['is_approved'] == 1) {
     return redirect()->back()
     ->with(['error' => 'عفوا  هذا الامر بالفعل معتمد من قبل ! ']);
     }
-    
+
     $data_to_update['is_approved'] = 1;
     $data_to_update['approved_by'] = auth()->user()->id;
     $data_to_update['approved_at'] = date("Y-m-d H:i:s");
     $flag=update(new Inv_production_order(), $data_to_update, array("id" => $id, "com_code" => $com_code));
 
 if ($flag) {
-return redirect()->route('admin.inv_production_order.index')->with(['success' => 'لقد تم اعتماد  امر التشغيل   بنجاح']);
+return redirect()->route('inv_production_order.index')->with(['success' => 'لقد تم اعتماد  امر التشغيل   بنجاح']);
 }else{
     return redirect()->back()
 ->with(['error' => '  عفوا لم يتم العملية من فضلك حاول مرةأخري ']);
@@ -207,7 +207,7 @@ if ($data['is_closed'] == 1) {
     $flag=update(new Inv_production_order(), $data_to_update, array("id" => $id, "com_code" => $com_code));
 
 if ($flag) {
-return redirect()->route('admin.inv_production_order.index')->with(['success' => 'لقد تم اعتماد  امر التشغيل   بنجاح']);
+return redirect()->route('inv_production_order.index')->with(['success' => 'لقد تم اعتماد  امر التشغيل   بنجاح']);
 }else{
     return redirect()->back()
 ->with(['error' => '  عفوا لم يتم العملية من فضلك حاول مرةأخري ']);
@@ -295,8 +295,8 @@ if (!empty($data)) {
         if ($info->is_closed==1) {
             $info->closed_by_admin = Admin::where('id', $info->closed_by)->value('name');
             }
-        
-    
+
+
     }
     }
 return view('admin.inv_production_order.ajax_search', ['data' => $data]);

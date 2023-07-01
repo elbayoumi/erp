@@ -25,9 +25,9 @@ use App\Http\Requests\Inv_production_ReceiveRequest;
 
 class inv_production_ReceiveController extends Controller
 {
-    
+
     public function index()
-    { 
+    {
     $com_code = auth()->user()->com_code;
     $data = get_cols_where_p(new inv_production_receive(), array("*"), array("com_code" => $com_code,'order_type'=>1), 'id', 'DESC', PAGINATION_COUNT);
     if (!empty($data)) {
@@ -43,7 +43,7 @@ class inv_production_ReceiveController extends Controller
     $Inv_production_lines = get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code), 'id', 'ASC');
     $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
     return view('admin.inv_production_Receive.index', ['data' => $data, 'Inv_production_lines' => $Inv_production_lines, 'stores' => $stores]);
-    }  
+    }
 
 
     public function create()
@@ -67,12 +67,12 @@ class inv_production_ReceiveController extends Controller
     if($Inv_production_order_data['is_approved']==0){
     return redirect()->back()
     ->with(['error' => 'عفوا  امر التشغيل المحدد غير معتمد !!'])
-    ->withInput();  
+    ->withInput();
     }
     if($Inv_production_order_data['is_closed']==1){
     return redirect()->back()
     ->with(['error' => 'عفوا  امر التشغيل المحدد  مغلق ومؤرشف !!'])
-    ->withInput();  
+    ->withInput();
     }
     $Inv_production_line_data = get_cols_where_row(new Inv_production_lines(), array("account_number"), array("production_lines_code" => $request->production_lines_code, "com_code" => $com_code));
     if (empty($Inv_production_line_data)) {
@@ -106,17 +106,17 @@ class inv_production_ReceiveController extends Controller
     ->withInput();
     }
     }
-    
-    
+
+
 public function edit($id)
 {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new inv_production_receive(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
-return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_approved'] == 1) {
-return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 $Inv_production_lines = get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code), 'id', 'ASC');
 $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code), 'id', 'DESC');
@@ -131,14 +131,14 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new inv_production_receive(), array("is_approved","auto_serial"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
-return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($data['is_approved'] == 1) {
-return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
+return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
 }
 $data_Inv_production_line = get_cols_where_row(new Inv_production_lines(), array("account_number"), array("production_lines_code" => $request->production_lines_code, "com_code" => $com_code));
 if (empty($data_Inv_production_line)) {
-return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي  بيانات خط الانتاج !!']);
+return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي  بيانات خط الانتاج !!']);
 }
 
 $data_to_update['store_id'] = $request->store_id;
@@ -151,7 +151,7 @@ $data_to_update['pill_type'] = $request->pill_type;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new inv_production_receive(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
-return redirect()->route('admin.inv_production_Receive.show',$id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('inv_production_Receive.show',$id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -183,7 +183,7 @@ if ($flag) {
 
 
 }
-return redirect()->route('admin.inv_production_Receive.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
+return redirect()->route('inv_production_Receive.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
 
 } catch (\Exception $ex) {
 return redirect()->back()
@@ -198,7 +198,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new inv_production_receive(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
-return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
 $data['production_lines_name'] = Inv_production_lines::where('production_lines_code', $data['production_lines_code'])->value('name');
@@ -412,11 +412,11 @@ $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuri
 return view("admin.inv_production_receive.load_usershiftDiv", ['user_shift' => $user_shift]);
 }
 
-//اعتماد وترحيل فاتورة المشتريات 
+//اعتماد وترحيل فاتورة المشتريات
 function do_approve($auto_serial, Request $request)
 {
 $com_code = auth()->user()->com_code;
-//check is not approved 
+//check is not approved
 $data = get_cols_where_row(new inv_production_receive(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "production_lines_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
 if (empty($data)) {
 return redirect()->route("admin.inv_production_Receive.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
@@ -456,7 +456,7 @@ return redirect()->route("admin.inv_production_Receive.show", $data['id'])->with
 }
 $dataUpdateParent['what_paid'] = $request['what_paid'];
 $dataUpdateParent['what_remain'] = $request['what_remain'];
-//thaird  check for what paid 
+//thaird  check for what paid
 if ($request['what_paid'] > 0) {
 if ($request['what_paid'] > $request['total_cost']) {
 return redirect()->route("admin.inv_production_Receive.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
@@ -479,7 +479,7 @@ if ($flag) {
 //حركات  مختلفه
 //first make treasuries_transactions  action if what paid >0
 if ($request['what_paid'] > 0) {
-//first get isal number with treasuries 
+//first get isal number with treasuries
 $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
 if (empty($treasury_date)) {
 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
@@ -514,7 +514,7 @@ $dataUpdateTreasuries['last_isal_exhcange'] = $dataInsert_treasuries_transaction
 update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
 }
 }
-//سيتم عمل دالة تحيث رصيد حساب خط الانتاج  مستقبلا 
+//سيتم عمل دالة تحيث رصيد حساب خط الانتاج  مستقبلا
 refresh_account_blance_ProductionLine($data['account_number'], new Account(), new Inv_production_lines(), new Treasuries_transactions(),new services_with_orders(),new Inv_production_exchange(),new inv_production_receive(), false);
 //store move حركة المخزن
 //first Get item card data جنجيب الاصناف اللي علي الفاتورة
@@ -535,15 +535,15 @@ $quntity = $info->deliverd_quantity;
 $unit_price = $info->unit_price;
 } else {
 // if is retail  لو كان بوحده الابن التجزئة
-//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما 
+//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما
 $quntity = ($info->deliverd_quantity / $itemCard_Data['retail_uom_quntToParent']);
 $unit_price = $info->unit_price * $itemCard_Data['retail_uom_quntToParent'];
 }
-//بندخل الكميات للمخزن بوحده القياس الاب  اجباري 
+//بندخل الكميات للمخزن بوحده القياس الاب  اجباري
 //لو الصنف استهلاكي له تاريخ صلاحيه وانتاج فبعمل تحقق بسعر الشراء مع التواريخ
 //لو الصنف  غير استهلاكي يبقي بعمل تحقق فقط بسعر الشراء
 if ($info->item_card_type == 2) {
-//استهلاكي بتواريخ 
+//استهلاكي بتواريخ
 $dataInsertBatch["store_id"] = $data['store_id'];
 $dataInsertBatch["item_code"] = $info->item_code;
 $dataInsertBatch["production_date"] = $info->production_date;
@@ -606,18 +606,18 @@ $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
 $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
 $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
 insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
-//item Move Card حركة الصنف 
+//item Move Card حركة الصنف
 }
 //update last Cost price   تحديث اخر سعر شراء للصنف
 if ($info->isparentuom == 1) {
-//لو الوحده اللي اشتريت بيها كانت وحده اب 
+//لو الوحده اللي اشتريت بيها كانت وحده اب
 $dataUpdateItemCardCosts['cost_price'] = $info->unit_price;
 if ($itemCard_Data['does_has_retailunit'] == 1) {
 $dataUpdateItemCardCosts['cost_price_retail'] = $info->unit_price / $itemCard_Data['retail_uom_quntToParent'];
 }
 } else {
 // if is retail  لو كان بوحده الابن التجزئة
-//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما 
+//التحويل من الاب للابن بنضرب   في النسبة بينهم - اما التحويل من الابن للاب بنقسم علي النسبه بينهما
 $dataUpdateItemCardCosts['cost_price'] = $info->unit_price * $itemCard_Data['retail_uom_quntToParent'];
 $dataUpdateItemCardCosts['cost_price_retail'] = $info->unit_price;
 }
@@ -694,7 +694,7 @@ $operator5 = "=";
 $value5 = $search_by_text;
 }
 } else {
-//true 
+//true
 $field5 = "id";
 $operator5 = ">";
 $value5 = 0;
@@ -734,12 +734,12 @@ public function printsaleswina4($id,$size){
     $com_code = auth()->user()->com_code;
     $invoice_data = get_cols_where_row(new inv_production_receive(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
     if (empty($invoice_data)) {
-    return redirect()->route('admin.inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('inv_production_Receive.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
     $invoice_data['added_by_admin'] = Admin::where('id', $invoice_data['added_by'])->value('name');
     $invoice_data['production_lines_name'] = Inv_production_lines::where('production_lines_code', $invoice_data['production_lines_code'])->value('name');
     $invoice_data['production_lines_phones'] = Inv_production_lines::where('production_lines_code', $invoice_data['production_lines_code'])->value('phones');
-    $invoice_data['store_name'] = Store::where('id', $invoice_data['store_id'])->value('name');  
+    $invoice_data['store_name'] = Store::where('id', $invoice_data['store_id'])->value('name');
   $invoices_details = get_cols_where(new inv_production_receive_details(), array("*"), array('inv_production_receive_auto_serial' => $invoice_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'ASC');
     if (!empty($invoices_details)) {
     foreach ($invoices_details as $info) {
@@ -748,12 +748,12 @@ public function printsaleswina4($id,$size){
     }
     }
     $systemData=get_cols_where_row(new Admin_panel_setting(),array("system_name","phone","address","photo"),array("com_code"=>$com_code));
-    
+
     if($size=="A4"){
         return view('admin.inv_production_exchange.printsaleswina4',['data'=>$invoice_data,'systemData'=>$systemData,'sales_invoices_details'=>$invoices_details]);
     }else{
         return view('admin.inv_production_exchange.printsaleswina6',['data'=>$invoice_data,'systemData'=>$systemData,'sales_invoices_details'=>$invoices_details]);
-    
+
     }
     } catch (\Exception $ex) {
     return redirect()->back()
