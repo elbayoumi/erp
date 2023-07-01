@@ -3,9 +3,11 @@
 //أخي الكريم هذا الكود هو اول 130 ساعة بالكورس الي نهاية الدورة الفيدو رقم  231- اما باقي أكواد الدورة الثانية للتطوير النظام موجوده بالدورة ولابد ان تكتبها بنفسك لأهميتها وللإستفادة
 
 namespace App\Http\Controllers\Admin;
-use App\Models\Admin_panel_setting;
-use App\Models\Admin;
-use App\Models\Account;
+use App\Models\{
+    Admin,
+    Admin_panel_setting,
+    Account,
+};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin_panel_settings_Request;
 use Illuminate\Http\Request;
