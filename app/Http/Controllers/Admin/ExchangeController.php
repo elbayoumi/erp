@@ -72,7 +72,7 @@ $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("treasurie
 if (empty($checkExistsOpenShift)) {
 return redirect()->back()->with(['error' => "  عفوا لايوجد شفت خزنة مفتوح حاليا !!"])->withInput();
 }
-//first get isal number with treasuries 
+//first get isal number with treasuries
 $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $request->treasuries_id));
 if (empty($treasury_date)) {
 return redirect()->back()->with(['error' => "  عفوا بيانات الخزنة المختارة غير موجوده !!"])->withInput();
@@ -119,7 +119,7 @@ if($account_type==2){
 
 
 
-return redirect()->route('admin.exchange_transaction.index')->with(['success' => "لقد تم اضافة البيانات بنجاح "]);
+return redirect()->route('exchange_transaction.index')->with(['success' => "لقد تم اضافة البيانات بنجاح "]);
 } else {
 return redirect()->back()->with(['error' => " عفوا حدث خطأ م من فضلك حاول مرة اخري !"])->withInput();
 }
@@ -246,7 +246,7 @@ $operator7 = "=";
 $value7 = $search_by_text;
 }
 } else {
-//true 
+//true
 $field7 = "id";
 $operator7 = ">";
 $value7 = 0;
