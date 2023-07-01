@@ -3,14 +3,18 @@
 //أخي الكريم هذا الكود هو اول 130 ساعة بالكورس الي نهاية الدورة الفيدو رقم  231- اما باقي أكواد الدورة الثانية للتطوير النظام موجوده بالدورة ولابد ان تكتبها بنفسك لأهميتها وللإستفادة
 
 namespace App\Http\Controllers\Admin;
-use App\Models\Account;
-use App\Models\Account_types;
-use App\Models\Admin;
-use App\Models\Customer;
+use App\Models\{
+    Account,
+    Account_types,
+    Admin,
+    Customer
+};
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Requests\AccountsRequest;
-use App\Http\Requests\AccountsRequestUpdate;
+use App\Http\Requests\{
+    AccountsRequest,
+    AccountsRequestUpdate,
+};
 class AccountsController extends Controller
 {
 public function index()
