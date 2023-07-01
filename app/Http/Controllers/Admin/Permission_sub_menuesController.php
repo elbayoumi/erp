@@ -27,12 +27,12 @@ class Permission_sub_menuesController extends Controller
 
     $info->permission_sub_menues_actions=get_cols_where(new Permission_sub_menues_actions(),array("*"),array('com_code'=>$com_code,"permission_sub_menues_id"=>$info->id),'id','DESC');
     if (!empty($info->permission_sub_menues_actions)) {
-        foreach ($info->permission_sub_menues_actions as $action) { 
+        foreach ($info->permission_sub_menues_actions as $action) {
             $action->added_by_admin = Admin::where('id', $action->added_by)->value('name');
             if ($action->updated_by > 0 and $action->updated_by != null) {
             $action->updated_by_admin = Admin::where('id', $action->updated_by)->value('name');
             }
-        } 
+        }
     }
 
 
@@ -43,7 +43,7 @@ class Permission_sub_menuesController extends Controller
     }
 
 
-    
+
     public function create()
     {
     $com_code = auth()->user()->com_code;
@@ -69,7 +69,7 @@ class Permission_sub_menuesController extends Controller
     $data['com_code'] = $com_code;
     $data['date'] = date("Y-m-d");
     Permission_sub_menues::create($data);
-    return redirect()->route('admin.permission_sub_menues.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+    return redirect()->route('permission_sub_menues.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
     } else {
     return redirect()->back()
     ->with(['error' => 'عفوا اسم الدور  مسجل من قبل'])
@@ -96,7 +96,7 @@ class Permission_sub_menuesController extends Controller
     $com_code = auth()->user()->com_code;
     $data = Permission_sub_menues::select()->find($id);
     if (empty($data)) {
-    return redirect()->route('admin.permission_sub_menues.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('permission_sub_menues.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
     $checkExists = Permission_sub_menues::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
     if ($checkExists != null) {
@@ -110,7 +110,7 @@ class Permission_sub_menuesController extends Controller
     $data_to_update['updated_by'] = auth()->user()->id;
     $data_to_update['updated_at'] = date("Y-m-d H:i:s");
     Permission_sub_menues::where(['id' => $id, 'com_code' => $com_code])->update($data_to_update);
-    return redirect()->route('admin.permission_sub_menues.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+    return redirect()->route('permission_sub_menues.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
     } catch (\Exception $ex) {
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -151,19 +151,19 @@ public function ajax_search(Request $request){
         if ($info->updated_by > 0 and $info->updated_by != null) {
         $info->updated_by_admin = Admin::where('id', $info->updated_by)->value('name');
         }
-    
-    
+
+
         $info->permission_sub_menues_actions=get_cols_where(new Permission_sub_menues_actions(),array("*"),array('com_code'=>$com_code,"permission_sub_menues_id"=>$info->id),'id','DESC');
         if (!empty($info->permission_sub_menues_actions)) {
-            foreach ($info->permission_sub_menues_actions as $action) { 
+            foreach ($info->permission_sub_menues_actions as $action) {
                 $action->added_by_admin = Admin::where('id', $action->added_by)->value('name');
                 if ($action->updated_by > 0 and $action->updated_by != null) {
                 $action->updated_by_admin = Admin::where('id', $action->updated_by)->value('name');
                 }
-            } 
+            }
         }
-    
-    
+
+
         }
         }
     return view('admin.permission_sub_menues.ajax_search',['data'=>$data]);
@@ -184,11 +184,11 @@ public function ajax_search(Request $request){
     $data['com_code'] = $com_code;
     $data['date'] = date("Y-m-d");
     Permission_sub_menues_actions::create($data);
-      echo json_encode("done");   
-    
+      echo json_encode("done");
+
 }else{
     echo json_encode("found");
-} 
+}
 
         }
     }
@@ -209,7 +209,7 @@ public function ajax_search(Request $request){
     update(new Permission_sub_menues_actions(),$data_to_update,array("com_code"=>$com_code,'id'=>$request->id));
     echo json_encode("done");
         }
-    
+
     }
 
     public function delete($id)
@@ -220,7 +220,7 @@ public function ajax_search(Request $request){
     if (!empty($item_row)) {
     $flag = $item_row->delete();
     if ($flag) {
-     delete(new Permission_sub_menues_actions(),array("com_code"=>$com_code,'permission_sub_menues_id'=>$id));   
+     delete(new Permission_sub_menues_actions(),array("com_code"=>$com_code,'permission_sub_menues_id'=>$id));
     return redirect()->back()
     ->with(['success' => '   تم حذف البيانات بنجاح']);
     } else {
@@ -235,7 +235,7 @@ public function ajax_search(Request $request){
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()]);
     }
-    } 
+    }
     public function ajax_do_delete_permission(Request $request){
         if($request->ajax()){
             $item_row = Permission_sub_menues_actions::find($request->id);

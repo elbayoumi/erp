@@ -44,7 +44,7 @@ $data['added_by'] = auth()->user()->id;
 $data['com_code'] = $com_code;
 $data['date'] = date("Y-m-d");
 Permission_rols::create($data);
-return redirect()->route('admin.permission_roles.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('permission_roles.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } else {
 return redirect()->back()
 ->with(['error' => 'عفوا اسم الدور  مسجل من قبل'])
@@ -67,7 +67,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = Permission_rols::select()->find($id);
 if (empty($data)) {
-return redirect()->route('admin.permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $checkExists = Permission_rols::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
 if ($checkExists != null) {
@@ -80,7 +80,7 @@ $data_to_update['active'] = $request->active;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 Permission_rols::where(['id' => $id, 'com_code' => $com_code])->update($data_to_update);
-return redirect()->route('admin.permission_roles.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('permission_roles.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -92,34 +92,34 @@ try{
 $com_code=auth()->user()->com_code;
 $data=get_cols_where_row(new Permission_rols(),array("*"),array("com_code"=>$com_code,"id"=>$id));
 if(empty($data)){
-return redirect()->route('admin.permission_roles.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('permission_roles.index')->with(['error'=>'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
-$data['added_by_admin']=Admin::where('id',$data['added_by'])->value('name');    
+$data['added_by_admin']=Admin::where('id',$data['added_by'])->value('name');
 if($data['updated_by']>0 and $data['updated_by']!=null){
-$data['updated_by_admin']=Admin::where('id',$data['updated_by'])->value('name');    
+$data['updated_by_admin']=Admin::where('id',$data['updated_by'])->value('name');
 }
-$Permission_main_menues=get_cols_where(new Permission_main_menues(),array("id",'name'),array("active"=>1,"com_code"=>$com_code));      
+$Permission_main_menues=get_cols_where(new Permission_main_menues(),array("id",'name'),array("active"=>1,"com_code"=>$com_code));
 $permission_roles_main_menus=get_cols_where(new Permission_roles_main_menus(),array("*"),array("com_code"=>$com_code,"permission_roles_id"=>$id));
 if(!empty($permission_roles_main_menus)){
 foreach($permission_roles_main_menus as $info){
-$info->permission_main_menues_name=get_field_value(new Permission_main_menues(),"name",array("com_code"=>$com_code,"id"=>$info->permission_main_menues_id));   
-$info->added_by_admin=Admin::where('id',$info->added_by)->value('name');    
+$info->permission_main_menues_name=get_field_value(new Permission_main_menues(),"name",array("com_code"=>$com_code,"id"=>$info->permission_main_menues_id));
+$info->added_by_admin=Admin::where('id',$info->added_by)->value('name');
 
 $info->permission_roles_sub_menu=get_cols_where(new Permission_roles_sub_menu(),array("*"),array("permission_roles_main_menus_id"=>$info->id));
 if(!empty($info->permission_roles_sub_menu)){
     foreach($info->permission_roles_sub_menu as $sub){
-        $sub->permission_sub_menues_name=get_field_value(new Permission_sub_menues(),"name",array("com_code"=>$com_code,"id"=>$sub->permission_sub_menues_id));   
-        $sub->added_by_admin=Admin::where('id',$sub->added_by)->value('name'); 
-        
+        $sub->permission_sub_menues_name=get_field_value(new Permission_sub_menues(),"name",array("com_code"=>$com_code,"id"=>$sub->permission_sub_menues_id));
+        $sub->added_by_admin=Admin::where('id',$sub->added_by)->value('name');
+
         $sub->permission_roles_sub_menues_actions=get_cols_where(new Permission_roles_sub_menues_actions(),array("*"),array("permission_roles_sub_menu_id"=>$sub->id));
         if(!empty($sub->permission_roles_sub_menues_actions)){
             foreach($sub->permission_roles_sub_menues_actions as $action){
-                $action->permission_sub_menues_actions_name=get_field_value(new Permission_sub_menues_actions(),"name",array("com_code"=>$com_code,"id"=>$action->permission_sub_menues_actions_id));   
+                $action->permission_sub_menues_actions_name=get_field_value(new Permission_sub_menues_actions(),"name",array("com_code"=>$com_code,"id"=>$action->permission_sub_menues_actions_id));
             }
         }
 
 
-        
+
 
     }
 }
@@ -140,11 +140,11 @@ try {
 $com_code = auth()->user()->com_code;
 $data = Permission_rols::select()->find($id);
 if (empty($data)) {
-return redirect()->route('admin.permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 $permission_main_menues_ids=$request->permission_main_menues_id;
 if(empty($permission_main_menues_ids)){
-return redirect()->route('admin.permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 foreach($permission_main_menues_ids as $info){
 $dataToInsert['com_code']=$com_code;
@@ -157,7 +157,7 @@ $dataToInsert['created_at'] = date("Y-m-d H:i:s");
 insert(new Permission_roles_main_menus(),$dataToInsert);
 }
 }
-return redirect()->route('admin.permission_roles.details',$id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('permission_roles.details',$id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -239,7 +239,7 @@ return redirect()->back()
 
 public function load_add_permission_roles_sub_menu(Request $request){
 if($request->ajax()){
-$com_code = auth()->user()->com_code;        
+$com_code = auth()->user()->com_code;
 $permission_roles_main_menus=get_cols_where_row(new Permission_roles_main_menus(),array("id","permission_main_menues_id"),array("id"=>$request->id,'com_code'=>$com_code));
 $permission_sub_menues="";
 if(!empty($permission_roles_main_menus)){
@@ -251,7 +251,7 @@ return view('admin.permission_roles.load_add_permission_roles_sub_menu', ['permi
 
 public function load_add_permission_roles_sub_menues_actions(Request $request){
     if($request->ajax()){
-    $com_code = auth()->user()->com_code;        
+    $com_code = auth()->user()->com_code;
     $permission_roles_sub_menu=get_cols_where_row(new Permission_roles_sub_menu(),array("id","permission_sub_menues_id"),array("id"=>$request->id));
     $permission_sub_menues_actions="";
     if(!empty($permission_roles_sub_menu)){

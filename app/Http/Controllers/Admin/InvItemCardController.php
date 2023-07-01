@@ -45,7 +45,7 @@ $com_code = auth()->user()->com_code;
 
 $admin_panel_settings=get_cols_where_row(new Admin_panel_setting(),array("is_set_Batches_setting"),array("com_code"=>$com_code));
 if($admin_panel_settings['is_set_Batches_setting']==0){
-    return redirect()->route('admin.itemcard.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
+    return redirect()->route('itemcard.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
 }
 
 
@@ -122,7 +122,7 @@ $data_insert['created_at'] = date("Y-m-d H:i:s");
 $data_insert['date'] = date("Y-m-d");
 $data_insert['com_code'] = $com_code;
 Inv_itemCard::create($data_insert);
-return redirect()->route('admin.itemcard.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+return redirect()->route('itemcard.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -148,7 +148,7 @@ try {
 $com_code = auth()->user()->com_code;
 $data = get_cols_where_row(new Inv_itemCard(), array("*"), array("id" => $id));
 if (empty($data)) {
-return redirect()->route('admin.itemcard.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+return redirect()->route('itemcard.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
 }
 if ($request->has('item_type')) {
 if ($request->item_type == "") {
@@ -245,7 +245,7 @@ $data_to_update['active'] = $request->active;
 $data_to_update['updated_by'] = auth()->user()->id;
 $data_to_update['updated_at'] = date("Y-m-d H:i:s");
 update(new Inv_itemCard(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
-return redirect()->route('admin.itemcard.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+return redirect()->route('itemcard.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
 } catch (\Exception $ex) {
 return redirect()->back()
 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -335,7 +335,7 @@ $operator3 = "like";
 $value3 = "%{$search_by_text}%";
 }
 } else {
-//true 
+//true
 $field3 = "id";
 $operator3 = ">";
 $value3 = 0;
@@ -457,7 +457,7 @@ public function generate_barcode($id)
 {
 $data = get_cols_where_row(new Inv_itemCard(), array("barcode","name"), array("id" => $id));
 if (empty($data)) {
-    return redirect()->route('admin.itemcard.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('itemcard.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
     return view("admin.inv_itemCard.generate_barcode",['data'=>$data]);
 

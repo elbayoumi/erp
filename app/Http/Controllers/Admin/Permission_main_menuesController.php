@@ -25,7 +25,7 @@ class Permission_main_menuesController extends Controller
     return view('admin.permission_main_menues.index', ['data' => $data]);
     }
 
-    
+
     public function create()
     {
     return view('admin.permission_main_menues.create');
@@ -45,7 +45,7 @@ class Permission_main_menuesController extends Controller
     $data['com_code'] = $com_code;
     $data['date'] = date("Y-m-d");
     Permission_main_menues::create($data);
-    return redirect()->route('admin.permission_main_menues.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+    return redirect()->route('permission_main_menues.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
     } else {
     return redirect()->back()
     ->with(['error' => 'عفوا اسم الدور  مسجل من قبل'])
@@ -69,7 +69,7 @@ class Permission_main_menuesController extends Controller
     $com_code = auth()->user()->com_code;
     $data = Permission_main_menues::select()->find($id);
     if (empty($data)) {
-    return redirect()->route('admin.permission_main_menues.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
+    return redirect()->route('permission_main_menues.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
     }
     $checkExists = Permission_main_menues::where(['name' => $request->name, 'com_code' => $com_code])->where('id', '!=', $id)->first();
     if ($checkExists != null) {
@@ -82,7 +82,7 @@ class Permission_main_menuesController extends Controller
     $data_to_update['updated_by'] = auth()->user()->id;
     $data_to_update['updated_at'] = date("Y-m-d H:i:s");
     Permission_main_menues::where(['id' => $id, 'com_code' => $com_code])->update($data_to_update);
-    return redirect()->route('admin.permission_main_menues.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
+    return redirect()->route('permission_main_menues.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
     } catch (\Exception $ex) {
     return redirect()->back()
     ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -98,7 +98,7 @@ class Permission_main_menuesController extends Controller
     if (!empty($item_row)) {
     $flag = $item_row->delete();
     if ($flag) {
-     delete(new Permission_sub_menues(),array("com_code"=>$com_code,'permission_main_menues_id'=>$id));   
+     delete(new Permission_sub_menues(),array("com_code"=>$com_code,'permission_main_menues_id'=>$id));
     return redirect()->back()
     ->with(['success' => '   تم حذف البيانات بنجاح']);
     } else {
