@@ -25,13 +25,14 @@ use App\Http\Requests\{
     Suppliers_with_ordersRequest,
     SupplierWithOrdersApproveBursahseRequst,
 };
+use Helpers\HelperClass;
 
 class Suppliers_with_ordersController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Suppliers_with_orders(), array("*"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Suppliers_with_orders(), array("*"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -42,33 +43,33 @@ class Suppliers_with_ordersController extends Controller
                 }
             }
         }
-        $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code), 'id', 'DESC');
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $suupliers = HelperClass::get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code), 'id', 'DESC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
         return view('admin.suppliers_with_orders.index', ['data' => $data, 'suupliers' => $suupliers, 'stores' => $stores]);
     }
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $admin_panel_settings = get_cols_where_row(new Admin_panel_setting(), array("is_set_Batches_setting"), array("com_code" => $com_code));
+        $admin_panel_settings = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("is_set_Batches_setting"), array("com_code" => $com_code));
         if ($admin_panel_settings['is_set_Batches_setting'] == 0) {
             return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
         }
 
-        $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $suupliers = HelperClass::get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
         return view('admin.suppliers_with_orders.create', ['suupliers' => $suupliers, 'stores' => $stores]);
     }
     public function store(Suppliers_with_ordersRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $supplierData = get_cols_where_row(new Supplier(), array("account_number"), array("suuplier_code" => $request->suuplier_code, "com_code" => $com_code));
+            $supplierData = HelperClass::get_cols_where_row(new Supplier(), array("account_number"), array("suuplier_code" => $request->suuplier_code, "com_code" => $com_code));
             if (empty($supplierData)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا   غير قادر علي الوصول الي بيانات المورد المحدد'])
                     ->withInput();
             }
-            $row = get_cols_where_row_orderby(new Suppliers_with_orders(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Suppliers_with_orders(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['auto_serial'] = $row['auto_serial'] + 1;
             } else {
@@ -86,7 +87,7 @@ class Suppliers_with_ordersController extends Controller
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
             Suppliers_with_orders::create($data_insert);
-            $id = get_field_value(new Suppliers_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => 1));
+            $id = HelperClass::get_field_value(new Suppliers_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => 1));
             return redirect()->route("admin.suppliers_orders.show", $id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -100,7 +101,7 @@ class Suppliers_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($data)) {
                 return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -110,11 +111,11 @@ class Suppliers_with_ordersController extends Controller
             if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                 $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
             }
-            $details = get_cols_where(new Suppliers_with_orders_details(), array("*"), array('suppliers_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
+            $details = HelperClass::get_cols_where(new Suppliers_with_orders_details(), array("*"), array('suppliers_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($details)) {
                 foreach ($details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                     $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                     if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                         $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
@@ -131,26 +132,26 @@ class Suppliers_with_ordersController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+        $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
         if (empty($data)) {
             return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
         }
         if ($data['is_approved'] == 1) {
             return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
         }
-        $suupliers = get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $suupliers = HelperClass::get_cols_where(new Supplier(), array('suuplier_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
         return view('admin.suppliers_with_orders.edit', ['data' => $data, 'suupliers' => $suupliers, 'stores' => $stores]);
     }
     public function update($id, Suppliers_with_ordersRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($data)) {
                 return redirect()->route('suppliers_with_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
-            $supplierData = get_cols_where_row(new Supplier(), array("account_number"), array("suuplier_code" => $request->suuplier_code, "com_code" => $com_code));
+            $supplierData = HelperClass::get_cols_where_row(new Supplier(), array("account_number"), array("suuplier_code" => $request->suuplier_code, "com_code" => $com_code));
             if (empty($supplierData)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا   غير قادر علي الوصول الي بيانات المورد المحدد'])
@@ -165,7 +166,7 @@ class Suppliers_with_ordersController extends Controller
             $data_to_update['account_number'] = $supplierData['account_number'];
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            update(new Suppliers_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            HelperClass::update(new Suppliers_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             return redirect()->route('suppliers_orders.show', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -178,13 +179,13 @@ class Suppliers_with_ordersController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $item_code = $request->item_code;
-            $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_code, "com_code" => $com_code));
+            $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_code, "com_code" => $com_code));
             if (!empty($item_card_Data)) {
                 if ($item_card_Data['does_has_retailunit'] == 1) {
-                    $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
-                    $item_card_Data['retial_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
+                    $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                    $item_card_Data['retial_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
                 } else {
-                    $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                    $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
                 }
             }
             return view("admin.suppliers_with_orders.get_item_uoms", ['item_card_Data' => $item_card_Data]);
@@ -196,7 +197,7 @@ class Suppliers_with_ordersController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $item_code = $request->item_code;
-            $suppliers_with_ordersData = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "order_date", "tax_value", "discount_value", "id"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $suppliers_with_ordersData = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "order_date", "tax_value", "discount_value", "id"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($suppliers_with_ordersData)) {
                 if ($suppliers_with_ordersData['is_approved'] == 0) {
                     $data_insert['suppliers_with_orders_auto_serial'] = $request->autoserailparent;
@@ -217,16 +218,16 @@ class Suppliers_with_ordersController extends Controller
                     $data_insert['added_by'] = auth()->user()->id;
                     $data_insert['created_at'] = date("Y-m-d H:i:s");
                     $data_insert['com_code'] = $com_code;
-                    $flag = insert(new Suppliers_with_orders_details(), $data_insert);
+                    $flag = HelperClass::insert(new Suppliers_with_orders_details(), $data_insert);
                     if ($flag) {
                         /** update parent pill */
-                        $total_detials_sum = get_sum_where(new Suppliers_with_orders_details(), 'total_price', array("suppliers_with_orders_auto_serial" => $request->autoserailparent, 'order_type' => 1, 'com_code' => $com_code));
+                        $total_detials_sum = HelperClass::get_sum_where(new Suppliers_with_orders_details(), 'total_price', array("suppliers_with_orders_auto_serial" => $request->autoserailparent, 'order_type' => 1, 'com_code' => $com_code));
                         $dataUpdateParent['total_cost_items'] = $total_detials_sum;
                         $dataUpdateParent['total_befor_discount'] = $total_detials_sum + $suppliers_with_ordersData['tax_value'];
                         $dataUpdateParent['total_cost'] = $dataUpdateParent['total_befor_discount'] - $suppliers_with_ordersData['discount_value'];
                         $dataUpdateParent['updated_by'] = auth()->user()->id;
                         $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
-                        update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+                        HelperClass::update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
                         echo json_encode("done");
                     }
                 }
@@ -241,13 +242,13 @@ class Suppliers_with_ordersController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $auto_serial = $request->autoserailparent;
-            $data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "id"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "id"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($data)) {
-                $details = get_cols_where(new Suppliers_with_orders_details(), array("*"), array('suppliers_with_orders_auto_serial' => $auto_serial, 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
+                $details = HelperClass::get_cols_where(new Suppliers_with_orders_details(), array("*"), array('suppliers_with_orders_auto_serial' => $auto_serial, 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
                 if (!empty($details)) {
                     foreach ($details as $info) {
                         $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                        $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                        $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                         $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                         if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                             $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
@@ -262,7 +263,7 @@ class Suppliers_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($data)) {
                 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                 $data['supplier_name'] = Supplier::where('suuplier_code', $data['suuplier_code'])->value('name');
@@ -278,18 +279,18 @@ class Suppliers_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
-                    $item_data_detials = get_cols_where_row(new Suppliers_with_orders_details(), array("*"), array("suppliers_with_orders_auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1, 'id' => $request->id));
-                    $item_cards = get_cols_where(new Inv_itemCard(), array("name", "item_code", "item_type", "barcode"), array('active' => 1, 'com_code' => $com_code), 'id', 'DESC');
-                    $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_data_detials['item_code'], "com_code" => $com_code));
+                    $item_data_detials = HelperClass::get_cols_where_row(new Suppliers_with_orders_details(), array("*"), array("suppliers_with_orders_auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1, 'id' => $request->id));
+                    $item_cards = HelperClass::get_cols_where(new Inv_itemCard(), array("name", "item_code", "item_type", "barcode"), array('active' => 1, 'com_code' => $com_code), 'id', 'DESC');
+                    $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_data_detials['item_code'], "com_code" => $com_code));
                     if (!empty($item_card_Data)) {
                         if ($item_card_Data['does_has_retailunit'] == 1) {
-                            $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
-                            $item_card_Data['retial_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
+                            $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                            $item_card_Data['retial_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
                         } else {
-                            $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                            $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
                         }
                     }
                     return view("admin.suppliers_with_orders.load_edit_item_details", ['parent_pill_data' => $parent_pill_data, 'item_data_detials' => $item_data_detials, 'item_cards' => $item_cards, 'item_card_Data' => $item_card_Data]);
@@ -301,10 +302,10 @@ class Suppliers_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
-                    $item_cards = get_cols_where(new Inv_itemCard(), array("name", "item_code", "item_type", 'barcode'), array('active' => 1, 'com_code' => $com_code), 'id', 'DESC');
+                    $item_cards = HelperClass::get_cols_where(new Inv_itemCard(), array("name", "item_code", "item_type", 'barcode'), array('active' => 1, 'com_code' => $com_code), 'id', 'DESC');
                     return view("admin.suppliers_with_orders.load_add_new_itemdetails", ['parent_pill_data' => $parent_pill_data, 'item_cards' => $item_cards]);
                 }
             }
@@ -314,7 +315,7 @@ class Suppliers_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "order_date", "tax_value", "discount_value"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "order_date", "tax_value", "discount_value"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
                     $data_to_update['item_code'] = $request->item_code_add;
@@ -332,16 +333,16 @@ class Suppliers_with_ordersController extends Controller
                     $data_to_update['updated_by'] = auth()->user()->id;
                     $data_to_update['updated_at'] = date("Y-m-d H:i:s");
                     $data_to_update['com_code'] = $com_code;
-                    $flag = update(new Suppliers_with_orders_details(), $data_to_update, array("id" => $request->id, 'com_code' => $com_code, 'order_type' => 1, 'suppliers_with_orders_auto_serial' => $request->autoserailparent));
+                    $flag = HelperClass::update(new Suppliers_with_orders_details(), $data_to_update, array("id" => $request->id, 'com_code' => $com_code, 'order_type' => 1, 'suppliers_with_orders_auto_serial' => $request->autoserailparent));
                     if ($flag) {
                         /** update parent pill */
-                        $total_detials_sum = get_sum_where(new Suppliers_with_orders_details(), 'total_price', array("suppliers_with_orders_auto_serial" => $request->autoserailparent, 'order_type' => 1, 'com_code' => $com_code));
+                        $total_detials_sum = HelperClass::get_sum_where(new Suppliers_with_orders_details(), 'total_price', array("suppliers_with_orders_auto_serial" => $request->autoserailparent, 'order_type' => 1, 'com_code' => $com_code));
                         $dataUpdateParent['total_cost_items'] = $total_detials_sum;
                         $dataUpdateParent['total_befor_discount'] = $total_detials_sum + $parent_pill_data['tax_value'];
                         $dataUpdateParent['total_cost'] = $dataUpdateParent['total_befor_discount'] - $parent_pill_data['discount_value'];
                         $dataUpdateParent['updated_by'] = auth()->user()->id;
                         $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
-                        update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+                        HelperClass::update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
                         echo json_encode("done");
                     }
                 }
@@ -353,7 +354,7 @@ class Suppliers_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "auto_serial"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "auto_serial"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($parent_pill_data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا حدث خطأ ما']);
@@ -364,10 +365,10 @@ class Suppliers_with_ordersController extends Controller
                         ->with(['error' => 'عفوا  لايمكن الحذف بتفاصيل فاتورة معتمده ومؤرشفة']);
                 }
             }
-            $flag = delete(new Suppliers_with_orders(), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $flag = HelperClass::delete(new Suppliers_with_orders(), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if ($flag) {
                 //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف
-                delete(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => 1));
+                HelperClass::delete(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => 1));
                 return redirect()->route('suppliers_orders.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
             }
         } catch (\Exception $ex) {
@@ -380,7 +381,7 @@ class Suppliers_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "auto_serial"), array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("is_approved", "auto_serial"), array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($parent_pill_data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا حدث خطأ ما']);
@@ -396,13 +397,13 @@ class Suppliers_with_ordersController extends Controller
                 $flag = $item_row->delete();
                 if ($flag) {
                     /** update parent pill */
-                    $total_detials_sum = get_sum_where(new Suppliers_with_orders_details(), 'total_price', array("suppliers_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code));
+                    $total_detials_sum = HelperClass::get_sum_where(new Suppliers_with_orders_details(), 'total_price', array("suppliers_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code));
                     $dataUpdateParent['total_cost_items'] = $total_detials_sum;
                     $dataUpdateParent['total_befor_discount'] = $total_detials_sum + $parent_pill_data['tax_value'];
                     $dataUpdateParent['total_cost'] = $dataUpdateParent['total_befor_discount'] - $parent_pill_data['discount_value'];
                     $dataUpdateParent['updated_by'] = auth()->user()->id;
                     $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
-                    update(new Suppliers_with_orders(), $dataUpdateParent, array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 1));
+                    HelperClass::update(new Suppliers_with_orders(), $dataUpdateParent, array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 1));
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);
                 } else {
@@ -425,10 +426,10 @@ class Suppliers_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
-            $counterDetails = get_count_where(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $counterDetails = HelperClass::get_count_where(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             return view("admin.suppliers_with_orders.load_modal_approve_invoice", ['data' => $data, 'user_shift' => $user_shift, 'counterDetails' => $counterDetails]);
         }
     }
@@ -437,7 +438,7 @@ class Suppliers_with_ordersController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
         }
         return view("admin.suppliers_with_orders.load_usershiftDiv", ['user_shift' => $user_shift]);
     }
@@ -447,15 +448,15 @@ class Suppliers_with_ordersController extends Controller
     {
         $com_code = auth()->user()->com_code;
         //check is not approved
-        $data = get_cols_where_row(new Suppliers_with_orders(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "suuplier_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+        $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "suuplier_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
         if (empty($data)) {
             return redirect()->route("admin.suppliers_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
-        $SupplierName = get_field_value(new Supplier(), "name", array("com_code" => $com_code, "suuplier_code" => $data['suuplier_code']));
+        $SupplierName = HelperClass::get_field_value(new Supplier(), "name", array("com_code" => $com_code, "suuplier_code" => $data['suuplier_code']));
         if ($data['is_approved'] == 1) {
             return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
         }
-        $counterDetails = get_count_where(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+        $counterDetails = HelperClass::get_count_where(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
         if ($counterDetails == 0) {
             return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد الفاتورة قبل اضافة الأصناف عليها !!!            "]);
         }
@@ -492,7 +493,7 @@ class Suppliers_with_ordersController extends Controller
                 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
             }
             //check for user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
             //chehck if is empty
             if (empty($user_shift)) {
                 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا لاتملتك الان شفت خزنة مفتوح لكي تتمكن من اتمام عمليه الصرف"]);
@@ -502,7 +503,7 @@ class Suppliers_with_ordersController extends Controller
                 return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا لاتملتك الان رصيد كافي بخزنة الصرف  لكي تتمكن من اتمام عمليه الصرف"]);
             }
         }
-        $flag = update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+        $flag = HelperClass::update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
         if ($flag) {
             //Affect on Supplier Balance  حنأثر في رصيد المورد
             //حنجيب  سجل المورد من الشجره المحاسبية برقم الحساب المالب
@@ -510,11 +511,11 @@ class Suppliers_with_ordersController extends Controller
             //first make treasuries_transactions  action if what paid >0
             if ($request['what_paid'] > 0) {
                 //first get isal number with treasuries
-                $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 if (empty($treasury_date)) {
                     return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
                 }
-                $last_record_treasuries_transactions_record = get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
+                $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
                 if (!empty($last_record_treasuries_transactions_record)) {
                     $dataInsert_treasuries_transactions['auto_serial'] = $last_record_treasuries_transactions_record['auto_serial'] + 1;
                 } else {
@@ -537,27 +538,27 @@ class Suppliers_with_ordersController extends Controller
                 $dataInsert_treasuries_transactions['created_at'] = date("Y-m-Y H:i:s");
                 $dataInsert_treasuries_transactions['added_by'] = auth()->user()->id;
                 $dataInsert_treasuries_transactions['com_code'] = $com_code;
-                $flag = insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
+                $flag = HelperClass::insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
                 if ($flag) {
                     //update Treasuries last_isal_collect
                     $dataUpdateTreasuries['last_isal_exhcange'] = $dataInsert_treasuries_transactions['isal_number'];
-                    update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                    HelperClass::update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 }
             }
-            refresh_account_blance_supplier($data['account_number'], new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
+            HelperClass::refresh_account_blance_supplier($data['account_number'], new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
             //store move حركة المخزن
             //first Get item card data جنجيب الاصناف اللي علي الفاتورة
-            $items = get_cols_where(new Suppliers_with_orders_details(), array("*"), array("suppliers_with_orders_auto_serial" => $auto_serial, "com_code" => $com_code, "order_type" => 1), "id", "ASC");
+            $items = HelperClass::get_cols_where(new Suppliers_with_orders_details(), array("*"), array("suppliers_with_orders_auto_serial" => $auto_serial, "com_code" => $com_code, "order_type" => 1), "id", "ASC");
             if (!empty($items)) {
                 foreach ($items as $info) {
                     //get itemCard Data
-                    $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $info->item_code));
+                    $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $info->item_code));
                     if (!empty($itemCard_Data)) {
                         //get Quantity Befor any Action  حنجيب كيمة الصنف بكل المخازن قبل الحركة
-                        $quantityBeforMove = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
+                        $quantityBeforMove = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
                         //get Quantity Befor any Action  حنجيب كيمة الصنف  بمخزن فاتورة المشتريات الحالي قبل الحركة
-                        $quantityBeforMoveCurrntStore = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['store_id']));
-                        $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                        $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['store_id']));
+                        $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                         //if is parent Uom لو وحده اب
                         if ($info->isparentuom == 1) {
                             $quntity = $info->deliverd_quantity;
@@ -572,7 +573,7 @@ class Suppliers_with_ordersController extends Controller
                         //لو الصنف استهلاكي له تاريخ صلاحيه وانتاج فبعمل تحقق بسعر الشراء مع التواريخ
                         //لو الصنف  غير استهلاكي يبقي بعمل تحقق فقط بسعر الشراء
 
-                        $admin_panel_settings = get_cols_where_row(new Admin_panel_setting(), array("Batches_setting_type"), array("com_code" => $com_code));
+                        $admin_panel_settings = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("Batches_setting_type"), array("com_code" => $com_code));
 
                         if ($info->item_card_type == 2) {
                             //استهلاكي بتواريخ
@@ -591,9 +592,9 @@ class Suppliers_with_ordersController extends Controller
                         }
 
                         if ($admin_panel_settings['Batches_setting_type'] == 1) {
-                            $OldBatchExsists = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), $dataInsertBatch);
+                            $OldBatchExsists = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), $dataInsertBatch);
                         } else {
-                            $OldBatchExsists = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), array("item_code" => $info->item_code, "com_code" => $com_code));
+                            $OldBatchExsists = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), array("item_code" => $info->item_code, "com_code" => $com_code));
                         }
 
 
@@ -609,7 +610,7 @@ class Suppliers_with_ordersController extends Controller
 
                             $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                             $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
-                            update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $OldBatchExsists['id'], "com_code" => $com_code));
+                            HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $OldBatchExsists['id'], "com_code" => $com_code));
                         } else {
                             //insert new Batch ادخال باتش جديده
                             $dataInsertBatch["quantity"] = $quntity;
@@ -617,18 +618,18 @@ class Suppliers_with_ordersController extends Controller
                             $dataInsertBatch["created_at"] = date("Y-m-d H:i:s");
                             $dataInsertBatch["added_by"] = auth()->user()->id;
                             $dataInsertBatch["com_code"] = $com_code;
-                            $row = get_cols_where_row_orderby(new Inv_itemcard_batches(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
+                            $row = HelperClass::get_cols_where_row_orderby(new Inv_itemcard_batches(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
                             if (!empty($row)) {
                                 $dataInsertBatch['auto_serial'] = $row['auto_serial'] + 1;
                             } else {
                                 $dataInsertBatch['auto_serial'] = 1;
                             }
-                            insert(new Inv_itemcard_batches(), $dataInsertBatch);
+                            HelperClass::insert(new Inv_itemcard_batches(), $dataInsertBatch);
                         }
                         //كمية الصنف بكل المخازن بعد اتمام حركة الباتشات وترحيلها
-                        $quantityAfterMove = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
+                        $quantityAfterMove = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
                         //كمية الصنف بمخزن فاتورة الشراء  بعد اتمام حركة الباتشات وترحيلها
-                        $quantityAfterMoveCurrentStore = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['store_id']));
+                        $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['store_id']));
                         $dataInsert_inv_itemcard_movements['inv_itemcard_movements_categories'] = 1;
                         $dataInsert_inv_itemcard_movements['items_movements_types'] = 1;
                         $dataInsert_inv_itemcard_movements['item_code'] = $info->item_code;
@@ -650,7 +651,7 @@ class Suppliers_with_ordersController extends Controller
                         $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                         $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                         $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                        insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                        HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                         //item Move Card حركة الصنف
                     }
                     //update last Cost price   تحديث اخر سعر شراء للصنف
@@ -666,9 +667,9 @@ class Suppliers_with_ordersController extends Controller
                         $dataUpdateItemCardCosts['cost_price'] = $info->unit_price * $itemCard_Data['retail_uom_quntToParent'];
                         $dataUpdateItemCardCosts['cost_price_retail'] = $info->unit_price;
                     }
-                    update(new Inv_itemCard(), $dataUpdateItemCardCosts, array("com_code" => $com_code, "item_code" => $info->item_code));
+                    HelperClass::update(new Inv_itemCard(), $dataUpdateItemCardCosts, array("com_code" => $com_code, "item_code" => $info->item_code));
                     // update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                    do_update_itemCardQuantity(new Inv_itemCard(), $info->item_code, new Inv_itemcard_batches(), $itemCard_Data['does_has_retailunit'], $itemCard_Data['retail_uom_quntToParent']);
+                    HelperClass::do_update_itemCardQuantity(new Inv_itemCard(), $info->item_code, new Inv_itemcard_batches(), $itemCard_Data['does_has_retailunit'], $itemCard_Data['retail_uom_quntToParent']);
                 }
             }
             return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['success' => " تم اعتماد وترحيل الفاتورة بنجاح  "]);
@@ -762,7 +763,7 @@ class Suppliers_with_ordersController extends Controller
 
         try {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $invoice_data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($invoice_data)) {
                 return redirect()->route('suppliers_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -772,14 +773,14 @@ class Suppliers_with_ordersController extends Controller
 
             $invoice_data['store_name'] = Store::where('id', $invoice_data['store_id'])->value('name');
 
-            $invoices_details = get_cols_where(new Suppliers_with_orders_details(), array("*"), array('suppliers_with_orders_auto_serial' => $invoice_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
+            $invoices_details = HelperClass::get_cols_where(new Suppliers_with_orders_details(), array("*"), array('suppliers_with_orders_auto_serial' => $invoice_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($invoices_details)) {
                 foreach ($invoices_details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                 }
             }
-            $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+            $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
 
             if ($size == "A4") {
                 return view('admin.suppliers_with_orders.printsaleswina4', ['data' => $invoice_data, 'systemData' => $systemData, 'sales_invoices_details' => $invoices_details]);

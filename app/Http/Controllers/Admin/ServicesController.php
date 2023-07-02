@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\{
     Admin,
@@ -16,7 +17,7 @@ class ServicesController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_p(new Services(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+            $data = HelperClass::get_cols_where_p(new Services(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
             if (!empty($data)) {
                 foreach ($data as $info) {
                     $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -39,7 +40,7 @@ class ServicesController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             //check if not exsits
-            $checkExists = get_cols_where_row(new Services(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
+            $checkExists = HelperClass::get_cols_where_row(new Services(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
             if (empty($checkExists)) {
                 $data['name'] = $request->name;
                 $data['type'] = $request->type;
@@ -48,7 +49,7 @@ class ServicesController extends Controller
                 $data['added_by'] = auth()->user()->id;
                 $data['com_code'] = $com_code;
                 $data['date'] = date("Y-m-d");
-                insert(new Services(), $data);
+                HelperClass::insert(new Services(), $data);
                 return redirect()->route('Services.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
             } else {
                 return redirect()->back()
@@ -65,7 +66,7 @@ class ServicesController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Services(), array("*"), array("com_code" => $com_code, 'id' => $id));
+        $data = HelperClass::get_cols_where_row(new Services(), array("*"), array("com_code" => $com_code, 'id' => $id));
         if (empty($data)) {
             return redirect()->back()
                 ->with(['error' => 'عفوا غير قادر الي الوصول الي البيانات المطلوبة !']);
@@ -76,7 +77,7 @@ class ServicesController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Services(), array("id"), array("com_code" => $com_code, 'id' => $id));
+            $data = HelperClass::get_cols_where_row(new Services(), array("id"), array("com_code" => $com_code, 'id' => $id));
             if (empty($data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا غير قادر الي الوصول الي البيانات المطلوبة !']);
@@ -91,7 +92,7 @@ class ServicesController extends Controller
             $data_to_update['active'] = $request->active;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            update(new Services(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
+            HelperClass::update(new Services(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
             return redirect()->route('Services.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()

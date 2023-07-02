@@ -15,13 +15,13 @@ use App\Http\Requests\{
     supplier_request,
     SupplierUpdateRequest,
 };
-
+use Helpers\HelperClass;
 class SuppliersController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Supplier(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Supplier(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -36,7 +36,7 @@ class SuppliersController extends Controller
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $suppliers_categories = get_cols_where(new SupplierCategories(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $suppliers_categories = HelperClass::get_cols_where(new SupplierCategories(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
         return view('admin.suppliers.create', ['suppliers_categories' => $suppliers_categories]);
     }
     public function store(supplier_request $request)
@@ -44,21 +44,21 @@ class SuppliersController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             //check if not exsits for name
-            $checkExists_name = get_cols_where_row(new Supplier(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
+            $checkExists_name = HelperClass::get_cols_where_row(new Supplier(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
             if (!empty($checkExists_name)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا اسم المورد مسجل من قبل'])
                     ->withInput();
             }
             //set customer code
-            $row = get_cols_where_row_orderby(new Supplier(), array("suuplier_code"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Supplier(), array("suuplier_code"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['suuplier_code'] = $row['suuplier_code'] + 1;
             } else {
                 $data_insert['suuplier_code'] = 1;
             }
             //set account number
-            $row = get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['account_number'] = $row['account_number'] + 1;
             } else {
@@ -92,7 +92,7 @@ class SuppliersController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            $flag = insert(new Supplier(), $data_insert);
+            $flag = HelperClass::insert(new Supplier(), $data_insert);
             if ($flag) {
                 //insert into accounts  بتفح سجل ليه بالشجرة المحاسبية
                 $data_insert_account['name'] = $request->name;
@@ -114,7 +114,7 @@ class SuppliersController extends Controller
                     $data_insert_account['start_balance'] = 0;
                 }
                 $data_insert_account['current_balance'] = $data_insert_account['start_balance'];
-                $suppliers_parent_account_number = get_field_value(new Admin_panel_setting(), "suppliers_parent_account_number", array('com_code' => $com_code));
+                $suppliers_parent_account_number = HelperClass::get_field_value(new Admin_panel_setting(), "suppliers_parent_account_number", array('com_code' => $com_code));
                 $data_insert_account['notes'] = $request->notes;
                 $data_insert_account['parent_account_number'] = $suppliers_parent_account_number;
                 $data_insert_account['is_parent'] = 0;
@@ -126,7 +126,7 @@ class SuppliersController extends Controller
                 $data_insert_account['date'] = date("Y-m-d");
                 $data_insert_account['com_code'] = $com_code;
                 $data_insert_account['other_table_FK'] = $data_insert['suuplier_code'];
-                $flag = insert(new Account(), $data_insert_account);
+                $flag = HelperClass::insert(new Account(), $data_insert_account);
             }
             return redirect()->route('supplier.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
@@ -138,15 +138,15 @@ class SuppliersController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Supplier(), array("*"), array("id" => $id, "com_code" => $com_code));
-        $suppliers_categories = get_cols_where(new SupplierCategories(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $data = HelperClass::get_cols_where_row(new Supplier(), array("*"), array("id" => $id, "com_code" => $com_code));
+        $suppliers_categories = HelperClass::get_cols_where(new SupplierCategories(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
         return view('admin.suppliers.edit', ['data' => $data, 'suppliers_categories' => $suppliers_categories]);
     }
     public function update($id, SupplierUpdateRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Supplier(), array("id", "account_number", "suuplier_code"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Supplier(), array("id", "account_number", "suuplier_code"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('supplier.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -163,13 +163,13 @@ class SuppliersController extends Controller
             $data_to_update['active'] = $request->active;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            $flag = update(new Supplier(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
+            $flag = HelperClass::update(new Supplier(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
             if ($flag) {
                 $data_to_update_account['name'] = $request->name;
                 $data_to_update_account['active'] = $request->active;
                 $data_to_update_account['updated_by'] = auth()->user()->id;
                 $data_to_update_account['updated_at'] = date("Y-m-d H:i:s");
-                $flag = update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['suuplier_code'], 'com_code' => $com_code, 'account_type' => 2));
+                $flag = HelperClass::update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['suuplier_code'], 'com_code' => $com_code, 'account_type' => 2));
             }
             return redirect()->route('supplier.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
@@ -182,9 +182,9 @@ class SuppliersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $item_row = get_cols_where_row(new Supplier(), array("name"), array("id" => $id, "com_code" => $com_code));
+            $item_row = HelperClass::get_cols_where_row(new Supplier(), array("name"), array("id" => $id, "com_code" => $com_code));
             if (!empty($item_row)) {
-                $flag = delete(new Supplier(), ["id" => $id, "com_code" => $com_code]);
+                $flag = HelperClass::delete(new Supplier(), ["id" => $id, "com_code" => $com_code]);
                 if ($flag) {
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);
