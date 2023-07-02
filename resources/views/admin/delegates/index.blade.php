@@ -17,7 +17,7 @@
       <h3 class="card-title card_title_center">بيانات   المناديب  </h3>
       <input type="hidden" id="token_search" value="{{csrf_token() }}">
       <input type="hidden" id="ajax_search_url" value="{{ route('delegates.ajax_search') }}">
-      <input type="hidden" id="ajax_search_show" value="{{ route('delegates.show') }}">
+      <input type="hidden" id="ajax_search_show" value="{{ route('delegates.shows')}}">
       <a href="{{ route('delegates.create') }}" class="btn btn-sm btn-success" >اضافة جديد</a>
    </div>
    <!-- /.card-header -->

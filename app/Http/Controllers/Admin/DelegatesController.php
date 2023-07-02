@@ -287,7 +287,8 @@ class DelegatesController extends Controller
             return view('admin.delegates.ajax_search', ['data' => $data, 'mirror' => $mirror]);
         }
     }
-    public function show(Request $request)
+
+    public function shows(Request $request)
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;

@@ -206,6 +206,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth:admin'], function () {
 
     /*      ═══════ ೋღ start  delegates   ღೋ ═══════                 */
     Route::resource('/delegates', DelegatesController::class);
+    Route::post('/delegates/show', [DelegatesController::class, 'shows'])->name('delegates.shows');
+
     Route::post('/delegates/ajax_search', [DelegatesController::class, 'ajax_search'])->name('delegates.ajax_search');
     /*     ═══════ ೋღ      end delegates       ღೋ ═══════           */
 
