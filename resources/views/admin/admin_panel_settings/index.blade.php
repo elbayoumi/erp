@@ -126,7 +126,7 @@
                      @else
                      لايوجد تحديث
                      @endif
-                     @if(check_permission_sub_menue_actions(2)==true)
+                     @if(HelperClass::check_permission_sub_menue_actions(2)==true)
                      <a href="{{ route('adminPanelSetting.edit') }}" class="btn btn-sm btn-success">تعديل</a>
                      @endif
                   </td>

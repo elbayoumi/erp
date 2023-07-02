@@ -26,7 +26,7 @@ use App\Models\{
     Admin_panel_setting,
     services_with_orders,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class SalesInvoicesController extends Controller
 {
     public function index()

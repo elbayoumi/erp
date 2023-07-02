@@ -22,7 +22,7 @@
             <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
 
-            @if(check_permission_main_menue(1)==true)
+            @if(HelperClass::check_permission_main_menue(1)==true)
                <li class="nav-item has-treeview {{ (request()->is('admin/adminpanelsetting*')||request()->is('admin/treasuries*') )?'menu-open':'' }}     ">
                <a href="#" class="nav-link {{ (request()->is('admin/adminpanelsetting*')||request()->is('admin/treasuries*') )?'active':'' }}">
                   <i class="nav-icon fas fa-tachometer-alt"></i>
@@ -32,14 +32,14 @@
                   </p>
                </a>
                <ul class="nav nav-treeview">
-                  @if(check_permission_sub_menue(1)==true)
+                  @if(HelperClass::check_permission_sub_menue(1)==true)
                   <li class="nav-item">
                      <a href="{{ route('adminPanelSetting.index') }}" class="nav-link {{ (request()->is('admin/adminpanelsetting*')) ?'active':'' }}">
                         <p>الضبط العام</p>
                      </a>
                   </li>
                @endif
-               @if(check_permission_sub_menue(2)==true)
+               @if(HelperClass::check_permission_sub_menue(2)==true)
                   <li class="nav-item">
                      <a href="{{ route('treasuries.index') }}" class="nav-link {{ (request()->is('admin/treasuries*') )?'active':'' }}">
                         <p>بيانات الخزن</p>

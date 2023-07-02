@@ -15,7 +15,7 @@ use App\Http\Requests\{
     Inv_production_linesRequest,
     Inv_production_linesU_Request,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 
 
 class Inv_production_linesController extends Controller

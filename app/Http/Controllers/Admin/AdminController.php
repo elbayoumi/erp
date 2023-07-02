@@ -16,7 +16,7 @@ use App\Http\Requests\{
     AdminRequest,
     AdminRequestUpdate,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 
 class AdminController extends Controller
 {

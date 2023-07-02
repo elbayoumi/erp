@@ -25,7 +25,7 @@ use App\Http\Requests\{
     Suppliers_with_ordersRequest,
     SupplierWithOrdersApproveBursahseRequst,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 
 class Suppliers_with_ordersController extends Controller
 {

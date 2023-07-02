@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\Account_types;
 class Account_types_controller extends Controller

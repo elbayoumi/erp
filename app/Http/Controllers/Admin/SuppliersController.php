@@ -15,7 +15,7 @@ use App\Http\Requests\{
     supplier_request,
     SupplierUpdateRequest,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class SuppliersController extends Controller
 {
     public function index()

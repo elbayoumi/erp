@@ -9,7 +9,7 @@ use App\Models\{
     Permission_sub_menues_actions,
 };
 use App\Http\Controllers\Controller;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Http\Requests\permission_sub_menuesequest;
 

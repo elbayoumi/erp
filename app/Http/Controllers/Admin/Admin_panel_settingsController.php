@@ -9,7 +9,7 @@ use App\Models\{
 };
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin_panel_settings_Request;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 
 class Admin_panel_settingsController extends Controller

@@ -11,7 +11,7 @@ use App\Models\{
     Inv_itemcard_batches,
     Store,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class ItemcardBalanceController extends Controller
 {
     public function index()

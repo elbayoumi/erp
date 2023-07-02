@@ -27,7 +27,7 @@ use App\Models\{
 use App\Http\Requests\Inv_production_exchangeRequest;
 use App\Http\Requests\inv_production_exchangeUpRequest;
 use Illuminate\Http\Request;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class Inv_production_exchangeController extends Controller
 {
     public function index()

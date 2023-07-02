@@ -22,7 +22,7 @@ use App\Http\Requests\{
     ItemcardRequest,
     ItemcardRequestUpdate,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class InvItemCardController extends Controller
 {
     public function index()

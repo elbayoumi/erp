@@ -25,7 +25,7 @@ use App\Http\Requests\{
     Suppliers_orders_general_returnRequest,
     Suppliers_orders_general_returnEditRequest,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class Suppliers_with_ordersGeneralRetuen extends Controller
 {
     public function index()

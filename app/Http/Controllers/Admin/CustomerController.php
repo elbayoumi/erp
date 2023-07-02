@@ -15,7 +15,7 @@ use App\Http\Requests\{
     CustomerRequest,
     CustomerEditRequest,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class CustomerController extends Controller
 {
     public function index()

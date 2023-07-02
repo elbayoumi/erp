@@ -15,7 +15,7 @@ use App\Http\Requests\{
     AccountsRequestUpdate,
 };
 
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 
 class AccountsController extends Controller
 {

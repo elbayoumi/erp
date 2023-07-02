@@ -14,7 +14,7 @@ use App\Models\{
     Inv_itemcard_batches,
 };
 use App\Http\Controllers\Controller;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 
 class Inv_stores_transferIncomingController extends Controller

@@ -14,7 +14,7 @@ use App\Http\Requests\{
     DelegatesRequestAdd,
     DelegatesUpdateRequest,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class DelegatesController extends Controller
 {
     public function index()

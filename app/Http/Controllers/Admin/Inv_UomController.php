@@ -14,7 +14,7 @@ use App\Http\Requests\{
     InvUomRequest,
     InvUomUpdateRequest,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 class Inv_UomController extends Controller
 {
     public function index()

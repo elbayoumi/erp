@@ -1,5 +1,7 @@
 <?php
-namespace Helpers;
+
+namespace App\Helpers;
+
 use App\Models\{
     Permission_roles_main_menus,
     Permission_roles_sub_menu,
@@ -9,12 +11,14 @@ use App\Models\{
 
 class HelperClass
 {
-   /**
-    * Summary of check_permission_main_menue
-    * @param mixed $permission_main_menues_id
-    * @return bool
-    */
-   static public function check_permission_main_menue($permission_main_menues_id = null)
+
+
+    /**
+     * Summary of check_permission_main_menue
+     * @param mixed $permission_main_menues_id
+     * @return bool
+     */
+    static public function check_permission_main_menue($permission_main_menues_id = null)
     {
         if ($permission_main_menues_id == "" || $permission_main_menues_id == null) {
             return false;
@@ -29,12 +33,12 @@ class HelperClass
         }
     }
 
-   /**
-    * Summary of check_permission_sub_menue
-    * @param mixed $permission_sub_menues_id
-    * @return bool
-    */
-   static public function check_permission_sub_menue($permission_sub_menues_id = null)
+    /**
+     * Summary of check_permission_sub_menue
+     * @param mixed $permission_sub_menues_id
+     * @return bool
+     */
+    static public function check_permission_sub_menue($permission_sub_menues_id = null)
     {
         if ($permission_sub_menues_id == "" || $permission_sub_menues_id == null) {
             return false;
@@ -50,12 +54,12 @@ class HelperClass
     }
 
 
-   /**
-    * Summary of check_permission_sub_menue_actions
-    * @param mixed $permission_roles_sub_menues_actions
-    * @return bool
-    */
-   static public function check_permission_sub_menue_actions($permission_roles_sub_menues_actions = null)
+    /**
+     * Summary of check_permission_sub_menue_actions
+     * @param mixed $permission_roles_sub_menues_actions
+     * @return bool
+     */
+    static public function check_permission_sub_menue_actions($permission_roles_sub_menues_actions = null)
     {
         if ($permission_roles_sub_menues_actions == "" || $permission_roles_sub_menues_actions == null) {
             return false;
@@ -71,12 +75,12 @@ class HelperClass
     }
 
 
-   /**
-    * Summary of check_permission_sub_menue_actions_redirect
-    * @param mixed $permission_roles_sub_menues_actions
-    * @return \Illuminate\Http\RedirectResponse|bool
-    */
-   static public function check_permission_sub_menue_actions_redirect($permission_roles_sub_menues_actions = null)
+    /**
+     * Summary of check_permission_sub_menue_actions_redirect
+     * @param mixed $permission_roles_sub_menues_actions
+     * @return \Illuminate\Http\RedirectResponse|bool
+     */
+    static public function check_permission_sub_menue_actions_redirect($permission_roles_sub_menues_actions = null)
     {
         if ($permission_roles_sub_menues_actions == "" || $permission_roles_sub_menues_actions == null) {
             return false;
@@ -90,13 +94,13 @@ class HelperClass
     }
 
 
-   /**
-    * Summary of uploadImage
-    * @param mixed $folder
-    * @param mixed $image
-    * @return string
-    */
-   static public function uploadImage($folder, $image)
+    /**
+     * Summary of uploadImage
+     * @param mixed $folder
+     * @param mixed $image
+     * @return string
+     */
+    static public function uploadImage($folder, $image)
     {
         $extension = strtolower($image->extension());
         $filename = time() . rand(100, 999) . '.' . $extension;
@@ -107,153 +111,153 @@ class HelperClass
     //we set default value for each parameter instatic public function to avoid error in composer update
     //Deprecate required parameters after optional parameters in
     /*get some cols by pagination table */
-   /**
-    * Summary of get_cols_where_p
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @param mixed $pagination_counter
-    * @return mixed
-    */
-   static public function get_cols_where_p($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC", $pagination_counter = 13)
+    /**
+     * Summary of get_cols_where_p
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @param mixed $pagination_counter
+     * @return mixed
+     */
+    static public function get_cols_where_p($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC", $pagination_counter = 13)
     {
         $data = $model::select($columns_names)->where($where)->orderby($order_field, $order_type)->paginate($pagination_counter);
         return $data;
     }
     /*get some cols by pagination table where 2 */
-   /**
-    * Summary of get_cols_where2_p
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $where2field
-    * @param mixed $where2operator
-    * @param mixed $where2value
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @param mixed $pagination_counter
-    * @return mixed
-    */
-   static public function get_cols_where2_p($model = null, $columns_names = array(), $where = array(), $where2field = null, $where2operator = null, $where2value = null, $order_field = "id", $order_type = "DESC", $pagination_counter = 13)
+    /**
+     * Summary of get_cols_where2_p
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $where2field
+     * @param mixed $where2operator
+     * @param mixed $where2value
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @param mixed $pagination_counter
+     * @return mixed
+     */
+    static public function get_cols_where2_p($model = null, $columns_names = array(), $where = array(), $where2field = null, $where2operator = null, $where2value = null, $order_field = "id", $order_type = "DESC", $pagination_counter = 13)
     {
         $data = $model::select($columns_names)->where($where)->where($where2field, $where2operator, $where2value)->orderby($order_field, $order_type)->paginate($pagination_counter);
         return $data;
     }
     /*get some cols  table */
-   /**
-    * Summary of get_cols_where
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @return mixed
-    */
-   static public function get_cols_where($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC")
+    /**
+     * Summary of get_cols_where
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @return mixed
+     */
+    static public function get_cols_where($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC")
     {
         $data = $model::select($columns_names)->where($where)->orderby($order_field, $order_type)->get();
         return $data;
     }
     /*get some cols  table */
-   /**
-    * Summary of get_cols_where_limit
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @param mixed $limit
-    * @return mixed
-    */
-   static public function get_cols_where_limit($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC", $limit = 1)
+    /**
+     * Summary of get_cols_where_limit
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @param mixed $limit
+     * @return mixed
+     */
+    static public function get_cols_where_limit($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC", $limit = 1)
     {
         $data = $model::select($columns_names)->where($where)->orderby($order_field, $order_type)->limit($limit)->get();
         return $data;
     }
     /*get some cols  table 2 */
-   /**
-    * Summary of get_cols_where_order2
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @param mixed $order_field2
-    * @param mixed $order_type2
-    * @return mixed
-    */
-   static public function get_cols_where_order2($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC", $order_field2 = "id", $order_type2 = "DESC")
+    /**
+     * Summary of get_cols_where_order2
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @param mixed $order_field2
+     * @param mixed $order_type2
+     * @return mixed
+     */
+    static public function get_cols_where_order2($model = null, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC", $order_field2 = "id", $order_type2 = "DESC")
     {
         $data = $model::select($columns_names)->where($where)->orderby($order_field, $order_type)->orderby($order_field2, $order_type2)->get();
         return $data;
     }
     /*get some cols  table */
-   /**
-    * Summary of get_cols
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @return mixed
-    */
-   static public function get_cols($model = null, $columns_names = array(), $order_field = "id", $order_type = "DESC")
+    /**
+     * Summary of get_cols
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @return mixed
+     */
+    static public function get_cols($model = null, $columns_names = array(), $order_field = "id", $order_type = "DESC")
     {
         $data = $model::select($columns_names)->orderby($order_field, $order_type)->get();
         return $data;
     }
     /*get some cols row table */
-   /**
-    * Summary of get_cols_where_row
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @return mixed
-    */
-   static public function get_cols_where_row($model = null, $columns_names = array(), $where = array())
+    /**
+     * Summary of get_cols_where_row
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @return mixed
+     */
+    static public function get_cols_where_row($model = null, $columns_names = array(), $where = array())
     {
         $data = $model::select($columns_names)->where($where)->first();
         return $data;
     }
     /*get some cols row table */
-   /**
-    * Summary of get_cols_where2_row
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $where2
-    * @return mixed
-    */
-   static public function get_cols_where2_row($model = null, $columns_names = array(), $where = array(), $where2 = "")
+    /**
+     * Summary of get_cols_where2_row
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $where2
+     * @return mixed
+     */
+    static public function get_cols_where2_row($model = null, $columns_names = array(), $where = array(), $where2 = "")
     {
         $data = $model::select($columns_names)->where($where)->where($where2)->first();
         return $data;
     }
     /*get some cols row table order by */
-   /**
-    * Summary of get_cols_where_row_orderby
-    * @param mixed $model
-    * @param mixed $columns_names
-    * @param mixed $where
-    * @param mixed $order_field
-    * @param mixed $order_type
-    * @return mixed
-    */
-   static public function get_cols_where_row_orderby($model, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC")
+    /**
+     * Summary of get_cols_where_row_orderby
+     * @param mixed $model
+     * @param mixed $columns_names
+     * @param mixed $where
+     * @param mixed $order_field
+     * @param mixed $order_type
+     * @return mixed
+     */
+    static public function get_cols_where_row_orderby($model, $columns_names = array(), $where = array(), $order_field = "id", $order_type = "DESC")
     {
         $data = $model::select($columns_names)->where($where)->orderby($order_field, $order_type)->first();
         return $data;
     }
     /*get some cols table */
-   /**
-    * Summary of insert
-    * @param mixed $model
-    * @param mixed $arrayToInsert
-    * @param mixed $returnData
-    * @return mixed
-    */
-   static public function insert($model = null, $arrayToInsert = array(), $returnData = false)
+    /**
+     * Summary of insert
+     * @param mixed $model
+     * @param mixed $arrayToInsert
+     * @param mixed $returnData
+     * @return mixed
+     */
+    static public function insert($model = null, $arrayToInsert = array(), $returnData = false)
     {
         $flag = $model::create($arrayToInsert);
         if ($returnData == true) {
@@ -263,61 +267,61 @@ class HelperClass
             return $flag;
         }
     }
-   /**
-    * Summary of get_field_value
-    * @param mixed $model
-    * @param mixed $field_name
-    * @param mixed $where
-    * @return mixed
-    */
-   static public function get_field_value($model = null, $field_name = null, $where = array())
+    /**
+     * Summary of get_field_value
+     * @param mixed $model
+     * @param mixed $field_name
+     * @param mixed $where
+     * @return mixed
+     */
+    static public function get_field_value($model = null, $field_name = null, $where = array())
     {
         $data = $model::where($where)->value($field_name);
         return $data;
     }
-   /**
-    * Summary of update
-    * @param mixed $model
-    * @param mixed $data_to_update
-    * @param mixed $where
-    * @return mixed
-    */
-   static public function update($model = null, $data_to_update = array(), $where = array())
+    /**
+     * Summary of update
+     * @param mixed $model
+     * @param mixed $data_to_update
+     * @param mixed $where
+     * @return mixed
+     */
+    static public function update($model = null, $data_to_update = array(), $where = array())
     {
         $flag = $model::where($where)->update($data_to_update);
         return $flag;
     }
-   /**
-    * Summary of delete
-    * @param mixed $model
-    * @param mixed $where
-    * @return mixed
-    */
-   static public function delete($model = null, $where = array())
+    /**
+     * Summary of delete
+     * @param mixed $model
+     * @param mixed $where
+     * @return mixed
+     */
+    static public function delete($model = null, $where = array())
     {
         $flag = $model::where($where)->delete();
         return $flag;
     }
-   /**
-    * Summary of get_sum_where
-    * @param mixed $model
-    * @param mixed $field_name
-    * @param mixed $where
-    * @return mixed
-    */
-   static public function get_sum_where($model = null, $field_name = null, $where = array())
+    /**
+     * Summary of get_sum_where
+     * @param mixed $model
+     * @param mixed $field_name
+     * @param mixed $where
+     * @return mixed
+     */
+    static public function get_sum_where($model = null, $field_name = null, $where = array())
     {
         $sum = $model::where($where)->sum($field_name);
         return $sum;
     }
-   /**
-    * Summary of get_user_shift
-    * @param mixed $Admins_Shifts
-    * @param mixed $Treasuries
-    * @param mixed $Treasuries_transactions
-    * @return mixed
-    */
-   static public function get_user_shift($Admins_Shifts, $Treasuries = null, $Treasuries_transactions = null)
+    /**
+     * Summary of get_user_shift
+     * @param mixed $Admins_Shifts
+     * @param mixed $Treasuries
+     * @param mixed $Treasuries_transactions
+     * @return mixed
+     */
+    static public function get_user_shift($Admins_Shifts, $Treasuries = null, $Treasuries_transactions = null)
     {
         $com_code = auth()->user()->com_code;
         $data = $Admins_Shifts::select("treasuries_id", "shift_code")->where(["com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0])->first();
@@ -328,18 +332,18 @@ class HelperClass
         return $data;
     }
     //get Account Balance دالة احتساب وتحديث رصيد الحساب المالي للمورد
-   /**
-    * Summary of refresh_account_blance_supplier
-    * @param mixed $account_number
-    * @param mixed $AccountModel
-    * @param mixed $SupplierModel
-    * @param mixed $treasuries_transactionsModel
-    * @param mixed $suppliers_with_ordersModel
-    * @param mixed $ServicesOrdersModel
-    * @param mixed $returnFlag
-    * @return mixed
-    */
-   static public function refresh_account_blance_supplier($account_number = null, $AccountModel = null, $SupplierModel = null, $treasuries_transactionsModel = null, $suppliers_with_ordersModel = null, $ServicesOrdersModel = null, $returnFlag = false)
+    /**
+     * Summary of refresh_account_blance_supplier
+     * @param mixed $account_number
+     * @param mixed $AccountModel
+     * @param mixed $SupplierModel
+     * @param mixed $treasuries_transactionsModel
+     * @param mixed $suppliers_with_ordersModel
+     * @param mixed $ServicesOrdersModel
+     * @param mixed $returnFlag
+     * @return mixed
+     */
+    static public function refresh_account_blance_supplier($account_number = null, $AccountModel = null, $SupplierModel = null, $treasuries_transactionsModel = null, $suppliers_with_ordersModel = null, $ServicesOrdersModel = null, $returnFlag = false)
     {
         $com_code = auth()->user()->com_code;
         //حنجيب الرصيد الافتتاحي  للحساب اول المده لحظة تكويده
@@ -365,18 +369,18 @@ class HelperClass
             }
         }
     }
-   /**
-    * Summary of refresh_account_blance_delegate
-    * @param mixed $account_number
-    * @param mixed $AccountModel
-    * @param mixed $delgateModel
-    * @param mixed $treasuries_transactionsModel
-    * @param mixed $SalesinvoiceModel
-    * @param mixed $ServicesOrdersModel
-    * @param mixed $returnFlag
-    * @return mixed
-    */
-   static public function refresh_account_blance_delegate($account_number = null, $AccountModel = null, $delgateModel = null, $treasuries_transactionsModel = null, $SalesinvoiceModel = null, $ServicesOrdersModel = null, $returnFlag = true)
+    /**
+     * Summary of refresh_account_blance_delegate
+     * @param mixed $account_number
+     * @param mixed $AccountModel
+     * @param mixed $delgateModel
+     * @param mixed $treasuries_transactionsModel
+     * @param mixed $SalesinvoiceModel
+     * @param mixed $ServicesOrdersModel
+     * @param mixed $returnFlag
+     * @return mixed
+     */
+    static public function refresh_account_blance_delegate($account_number = null, $AccountModel = null, $delgateModel = null, $treasuries_transactionsModel = null, $SalesinvoiceModel = null, $ServicesOrdersModel = null, $returnFlag = true)
     {
         $com_code = auth()->user()->com_code;
         //حنجيب الرصيد الافتتاحي  للحساب اول المده لحظة تكويده
@@ -406,19 +410,19 @@ class HelperClass
         }
     }
     //get Account Balance دالة احتساب وتحديث رصيد الحساب المالي للعميل
-   /**
-    * Summary of refresh_account_blance_customer
-    * @param mixed $account_number
-    * @param mixed $AccountModel
-    * @param mixed $customerModel
-    * @param mixed $treasuries_transactionsModel
-    * @param mixed $SalesinvoiceModel
-    * @param mixed $SalesReturnModel
-    * @param mixed $ServicesOrdersModel
-    * @param mixed $returnFlag
-    * @return mixed
-    */
-   static public function refresh_account_blance_customer($account_number = null, $AccountModel = null, $customerModel = null, $treasuries_transactionsModel = null, $SalesinvoiceModel = null, $SalesReturnModel = null, $ServicesOrdersModel = null, $returnFlag = false)
+    /**
+     * Summary of refresh_account_blance_customer
+     * @param mixed $account_number
+     * @param mixed $AccountModel
+     * @param mixed $customerModel
+     * @param mixed $treasuries_transactionsModel
+     * @param mixed $SalesinvoiceModel
+     * @param mixed $SalesReturnModel
+     * @param mixed $ServicesOrdersModel
+     * @param mixed $returnFlag
+     * @return mixed
+     */
+    static public function refresh_account_blance_customer($account_number = null, $AccountModel = null, $customerModel = null, $treasuries_transactionsModel = null, $SalesinvoiceModel = null, $SalesReturnModel = null, $ServicesOrdersModel = null, $returnFlag = false)
     {
         $com_code = auth()->user()->com_code;
         //حنجيب الرصيد الافتتاحي  للحساب اول المده لحظة تكويده
@@ -448,16 +452,16 @@ class HelperClass
         }
     }
     //get Account Balance دالة احتساب وتحديث رصيد الحساب المالي العام
-   /**
-    * Summary of refresh_account_blance_General
-    * @param mixed $account_number
-    * @param mixed $AccountModel
-    * @param mixed $treasuries_transactionsModel
-    * @param mixed $ServicesOrdersModel
-    * @param mixed $returnFlag
-    * @return mixed
-    */
-   static public function refresh_account_blance_General($account_number = null, $AccountModel = null, $treasuries_transactionsModel = null, $ServicesOrdersModel = null, $returnFlag = false)
+    /**
+     * Summary of refresh_account_blance_General
+     * @param mixed $account_number
+     * @param mixed $AccountModel
+     * @param mixed $treasuries_transactionsModel
+     * @param mixed $ServicesOrdersModel
+     * @param mixed $returnFlag
+     * @return mixed
+     */
+    static public function refresh_account_blance_General($account_number = null, $AccountModel = null, $treasuries_transactionsModel = null, $ServicesOrdersModel = null, $returnFlag = false)
     {
         $com_code = auth()->user()->com_code;
         //حنجيب الرصيد الافتتاحي  للحساب اول المده لحظة تكويده
@@ -476,16 +480,16 @@ class HelperClass
             }
         }
     }
-   /**
-    * Summary of do_update_itemCardQuantity
-    * @param mixed $Inv_itemCard
-    * @param mixed $item_code
-    * @param mixed $Inv_itemcard_batches
-    * @param mixed $does_has_retailunit
-    * @param mixed $retail_uom_quntToParent
-    * @return void
-    */
-   static public function do_update_itemCardQuantity($Inv_itemCard = null, $item_code = null, $Inv_itemcard_batches = null, $does_has_retailunit = null, $retail_uom_quntToParent = null)
+    /**
+     * Summary of do_update_itemCardQuantity
+     * @param mixed $Inv_itemCard
+     * @param mixed $item_code
+     * @param mixed $Inv_itemcard_batches
+     * @param mixed $does_has_retailunit
+     * @param mixed $retail_uom_quntToParent
+     * @return void
+     */
+    static public function do_update_itemCardQuantity($Inv_itemCard = null, $item_code = null, $Inv_itemcard_batches = null, $does_has_retailunit = null, $retail_uom_quntToParent = null)
     {
         $com_code = auth()->user()->com_code;
         // update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
@@ -509,31 +513,31 @@ class HelperClass
         self::update($Inv_itemCard, $DataToUpdateItemCardQuantity, array("com_code" => $com_code, "item_code" => $item_code));
     }
     /*get counter where from  table */
-   /**
-    * Summary of get_count_where
-    * @param mixed $model
-    * @param mixed $where
-    * @return mixed
-    */
-   static public function get_count_where($model = null,  $where = array())
+    /**
+     * Summary of get_count_where
+     * @param mixed $model
+     * @param mixed $where
+     * @return mixed
+     */
+    static public function get_count_where($model = null,  $where = array())
     {
         $counter = $model::where($where)->count();
         return $counter;
     }
     //get Account Balance دالة احتساب وتحديث رصيد الحساب المالي للمورد
-   /**
-    * Summary of refresh_account_blance_ProductionLine
-    * @param mixed $account_number
-    * @param mixed $AccountModel
-    * @param mixed $ProductionLineModel
-    * @param mixed $treasuries_transactionsModel
-    * @param mixed $ServicesOrdersModel
-    * @param mixed $inv_production_exchangeModel
-    * @param mixed $inv_production_receiveModel
-    * @param mixed $returnFlag
-    * @return mixed
-    */
-   static public function refresh_account_blance_ProductionLine($account_number = null, $AccountModel = null, $ProductionLineModel = null, $treasuries_transactionsModel = null, $ServicesOrdersModel = null, $inv_production_exchangeModel = null, $inv_production_receiveModel = null, $returnFlag = false)
+    /**
+     * Summary of refresh_account_blance_ProductionLine
+     * @param mixed $account_number
+     * @param mixed $AccountModel
+     * @param mixed $ProductionLineModel
+     * @param mixed $treasuries_transactionsModel
+     * @param mixed $ServicesOrdersModel
+     * @param mixed $inv_production_exchangeModel
+     * @param mixed $inv_production_receiveModel
+     * @param mixed $returnFlag
+     * @return mixed
+     */
+    static public function refresh_account_blance_ProductionLine($account_number = null, $AccountModel = null, $ProductionLineModel = null, $treasuries_transactionsModel = null, $ServicesOrdersModel = null, $inv_production_exchangeModel = null, $inv_production_receiveModel = null, $returnFlag = false)
     {
         $com_code = auth()->user()->com_code;
         //حنجيب الرصيد الافتتاحي  للحساب اول المده لحظة تكويده

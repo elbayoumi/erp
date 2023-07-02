@@ -8,7 +8,7 @@ use App\Models\{
     Admin,
     Permission_sub_menues,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Http\Requests\Permission_main_menuesRequst;
 

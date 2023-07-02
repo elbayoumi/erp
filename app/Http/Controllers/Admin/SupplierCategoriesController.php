@@ -7,7 +7,7 @@ use App\Models\{
     Admin,
 };
 use App\Http\Controllers\Controller;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Http\Requests\SupplierCategoriesRequest;
 

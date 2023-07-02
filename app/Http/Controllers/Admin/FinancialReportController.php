@@ -24,7 +24,7 @@ use App\Models\{
     Services,
     services_with_orders_details,
 };
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 
 class FinancialReportController extends Controller

@@ -18,7 +18,7 @@ use App\Http\Requests\{
     Inv_stores_transferRequestUpdate,
 };
 use App\Http\Controllers\Controller;
-use Helpers\HelperClass;
+use App\Helpers\HelperClass;
 use Illuminate\Http\Request;
 
 class Inv_stores_transferController extends Controller
