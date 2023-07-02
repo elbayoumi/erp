@@ -14,7 +14,7 @@ use App\Http\Requests\{
     InvUomRequest,
     InvUomUpdateRequest,
 };
-
+use Helpers\HelperClass;
 class Inv_UomController extends Controller
 {
     public function index()
@@ -68,9 +68,9 @@ class Inv_UomController extends Controller
         $data = Inv_uom::select()->find($id);
         //check if this uom used befor  نتحقق من الوحده هل تم استخدامها بالفعل ام ليس بعد
         //check in suppliers_with_orders_details نتحقق من المشتريات
-        $suppliers_with_orders_detailsCount = get_count_where(new Suppliers_with_orders_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
+        $suppliers_with_orders_detailsCount = HelperClass::get_count_where(new Suppliers_with_orders_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
         //check in Sales_invoices_details نتحقق من المبيعات
-        $sales_invoices_detailsCount = get_count_where(new Sales_invoices_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
+        $sales_invoices_detailsCount = HelperClass::get_count_where(new Sales_invoices_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
         $total_counter_used = $suppliers_with_orders_detailsCount + $sales_invoices_detailsCount;
         return view('admin.inv_uom.edit', ['data' => $data, 'total_counter_used' => $total_counter_used]);
     }
@@ -96,9 +96,9 @@ class Inv_UomController extends Controller
                 }
                 //check if this uom used befor  نتحقق من الوحده هل تم استخدامها بالفعل ام ليس بعد
                 //check in suppliers_with_orders_details نتحقق من المشتريات
-                $suppliers_with_orders_detailsCount = get_count_where(new Suppliers_with_orders_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
+                $suppliers_with_orders_detailsCount = HelperClass::get_count_where(new Suppliers_with_orders_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
                 //check in Sales_invoices_details نتحقق من المبيعات
-                $sales_invoices_detailsCount = get_count_where(new Sales_invoices_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
+                $sales_invoices_detailsCount = HelperClass::get_count_where(new Sales_invoices_details(), array('com_code' => $com_code, 'uom_id' => $data['id']));
                 $total_counter_used = $suppliers_with_orders_detailsCount + $sales_invoices_detailsCount;
                 if ($total_counter_used == 0) {
                     $data_to_update['is_master'] = $request->is_master;

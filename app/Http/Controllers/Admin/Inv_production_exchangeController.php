@@ -27,13 +27,13 @@ use App\Models\{
 use App\Http\Requests\Inv_production_exchangeRequest;
 use App\Http\Requests\inv_production_exchangeUpRequest;
 use Illuminate\Http\Request;
-
+use Helpers\HelperClass;
 class Inv_production_exchangeController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Inv_production_exchange(), array("*"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Inv_production_exchange(), array("*"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -44,16 +44,16 @@ class Inv_production_exchangeController extends Controller
                 }
             }
         }
-        $Inv_production_lines = get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code), 'id', 'ASC');
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $Inv_production_lines = HelperClass::get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code), 'id', 'ASC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         return view('admin.inv_production_exchange.index', ['data' => $data, 'Inv_production_lines' => $Inv_production_lines, 'stores' => $stores]);
     }
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $Inv_production_lines = get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
-        $Inv_production_order = get_cols_where(new Inv_production_order(), array('auto_serial'), array('com_code' => $com_code, 'is_closed' => 0, 'is_approved' => 1), 'id', 'DESC');
+        $Inv_production_lines = HelperClass::get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $Inv_production_order = HelperClass::get_cols_where(new Inv_production_order(), array('auto_serial'), array('com_code' => $com_code, 'is_closed' => 0, 'is_approved' => 1), 'id', 'DESC');
         return view('admin.inv_production_exchange.create', ['Inv_production_lines' => $Inv_production_lines, 'stores' => $stores, 'Inv_production_order' => $Inv_production_order]);
     }
 
@@ -61,7 +61,7 @@ class Inv_production_exchangeController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $Inv_production_order_data = get_cols_where_row(new Inv_production_order(), array("is_approved", "is_closed"), array("auto_serial" => $request->inv_production_order_auto_serial, "com_code" => $com_code));
+            $Inv_production_order_data = HelperClass::get_cols_where_row(new Inv_production_order(), array("is_approved", "is_closed"), array("auto_serial" => $request->inv_production_order_auto_serial, "com_code" => $com_code));
             if (empty($Inv_production_order_data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا   غير قادر علي الوصول الي بيانات أمر التشغيل  المحدد'])
@@ -77,13 +77,13 @@ class Inv_production_exchangeController extends Controller
                     ->with(['error' => 'عفوا  امر التشغيل المحدد  مغلق ومؤرشف !!'])
                     ->withInput();
             }
-            $Inv_production_line_data = get_cols_where_row(new Inv_production_lines(), array("account_number"), array("production_lines_code" => $request->production_lines_code, "com_code" => $com_code));
+            $Inv_production_line_data = HelperClass::get_cols_where_row(new Inv_production_lines(), array("account_number"), array("production_lines_code" => $request->production_lines_code, "com_code" => $com_code));
             if (empty($Inv_production_line_data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا   غير قادر علي الوصول الي بيانات خط الانتاج  المحدد'])
                     ->withInput();
             }
-            $row = get_cols_where_row_orderby(new Inv_production_exchange(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Inv_production_exchange(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['auto_serial'] = $row['auto_serial'] + 1;
             } else {
@@ -100,8 +100,8 @@ class Inv_production_exchangeController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            insert(new Inv_production_exchange(), $data_insert);
-            //$id = get_field_value(new Suppliers_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => 3));
+            HelperClass::insert(new Inv_production_exchange(), $data_insert);
+            //$id = HelperClass::get_field_value(new Suppliers_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => 3));
             return redirect()->route("admin.inv_production_exchange.index")->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -114,35 +114,35 @@ class Inv_production_exchangeController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Inv_production_exchange(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+        $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
         if (empty($data)) {
             return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
         }
         if ($data['is_approved'] == 1) {
             return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
         }
-        $Inv_production_lines = get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code), 'id', 'ASC');
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code), 'id', 'DESC');
-        $Inv_production_order = get_cols_where(new Inv_production_order(), array('auto_serial'), array('com_code' => $com_code, 'is_closed' => 0, 'is_approved' => 1), 'id', 'DESC');
-        $added_counter_details = get_count_where(new Inv_production_exchange_details(), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $data['auto_serial']));
+        $Inv_production_lines = HelperClass::get_cols_where(new Inv_production_lines(), array('production_lines_code', 'name'), array('com_code' => $com_code), 'id', 'ASC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code), 'id', 'DESC');
+        $Inv_production_order = HelperClass::get_cols_where(new Inv_production_order(), array('auto_serial'), array('com_code' => $com_code, 'is_closed' => 0, 'is_approved' => 1), 'id', 'DESC');
+        $added_counter_details = HelperClass::get_count_where(new Inv_production_exchange_details(), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $data['auto_serial']));
         return view('admin.inv_production_exchange.edit', ['data' => $data, 'Inv_production_lines' => $Inv_production_lines, 'stores' => $stores, 'Inv_production_order' => $Inv_production_order, 'added_counter_details' => $added_counter_details]);
     }
     public function update($id, inv_production_exchangeUpRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_production_exchange(), array("is_approved", "auto_serial"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("is_approved", "auto_serial"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($data)) {
                 return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             if ($data['is_approved'] == 1) {
                 return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
             }
-            $data_Inv_production_line = get_cols_where_row(new Inv_production_lines(), array("account_number"), array("production_lines_code" => $request->production_lines_code, "com_code" => $com_code));
+            $data_Inv_production_line = HelperClass::get_cols_where_row(new Inv_production_lines(), array("account_number"), array("production_lines_code" => $request->production_lines_code, "com_code" => $com_code));
             if (empty($data_Inv_production_line)) {
                 return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا غير قادر علي الوصول الي  بيانات خط الانتاج !!']);
             }
-            $added_counter_details = get_count_where(new Inv_production_exchange_details(), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $data['auto_serial']));
+            $added_counter_details = HelperClass::get_count_where(new Inv_production_exchange_details(), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $data['auto_serial']));
             if ($added_counter_details == 0) {
                 $data_to_update['store_id'] = $request->store_id;
                 $data_to_update['production_lines_code'] = $request->production_lines_code;
@@ -154,7 +154,7 @@ class Inv_production_exchangeController extends Controller
             $data_to_update['pill_type'] = $request->pill_type;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            update(new Inv_production_exchange(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            HelperClass::update(new Inv_production_exchange(), $data_to_update, array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             return redirect()->route('inv_production_exchange.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -168,7 +168,7 @@ class Inv_production_exchangeController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_production_exchange(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($data)) {
                 return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -179,11 +179,11 @@ class Inv_production_exchangeController extends Controller
                 $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
             }
 
-            $details = get_cols_where(new Inv_production_exchange_details(), array("*"), array('inv_production_exchange_auto_serial' => $data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
+            $details = HelperClass::get_cols_where(new Inv_production_exchange_details(), array("*"), array('inv_production_exchange_auto_serial' => $data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($details)) {
                 foreach ($details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                     $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                     if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                         $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
@@ -202,11 +202,11 @@ class Inv_production_exchangeController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Inv_production_exchange(), array("is_approved", "store_id"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("is_approved", "store_id"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
-                    $item_cards = get_cols_where(new Inv_itemCard(), array("name", "item_code", "item_type"), array('active' => 1, 'com_code' => $com_code), 'id', 'DESC');
-                    $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'id' => $parent_pill_data['store_id']), 'id', 'DESC');
+                    $item_cards = HelperClass::get_cols_where(new Inv_itemCard(), array("name", "item_code", "item_type"), array('active' => 1, 'com_code' => $com_code), 'id', 'DESC');
+                    $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'id' => $parent_pill_data['store_id']), 'id', 'DESC');
                     return view("admin.inv_production_exchange.load_add_new_itemdetails", ['parent_pill_data' => $parent_pill_data, 'item_cards' => $item_cards, 'stores' => $stores]);
                 }
             }
@@ -219,13 +219,13 @@ class Inv_production_exchangeController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $item_code = $request->item_code;
-            $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_code, "com_code" => $com_code));
+            $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_code, "com_code" => $com_code));
             if (!empty($item_card_Data)) {
                 if ($item_card_Data['does_has_retailunit'] == 1) {
-                    $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
-                    $item_card_Data['retial_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
+                    $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                    $item_card_Data['retial_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
                 } else {
-                    $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                    $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
                 }
             }
             return view("admin.suppliers_orders_general_return.get_item_uoms", ['item_card_Data' => $item_card_Data]);
@@ -235,17 +235,17 @@ class Inv_production_exchangeController extends Controller
     {
         $com_code = auth()->user()->com_code;
         if ($request->ajax()) {
-            $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("item_type", "uom_id", "retail_uom_quntToParent"), array("com_code" => $com_code, "item_code" => $request->item_code));
+            $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("item_type", "uom_id", "retail_uom_quntToParent"), array("com_code" => $com_code, "item_code" => $request->item_code));
             if (!empty($item_card_Data)) {
                 $requesed['uom_id'] = $request->uom_id;
                 $requesed['store_id'] = $request->store_id;
                 $requesed['item_code'] = $request->item_code;
                 $parent_uom = $item_card_Data['uom_id'];
-                $uom_Data = get_cols_where_row(new Inv_uom(), array("name", "is_master"), array("com_code" => $com_code, "id" => $requesed['uom_id']));
+                $uom_Data = HelperClass::get_cols_where_row(new Inv_uom(), array("name", "is_master"), array("com_code" => $com_code, "id" => $requesed['uom_id']));
                 if (!empty($uom_Data)) {
                     //لو صنف مخزني يبقي ههتم بالتواريخ
                     if ($item_card_Data['item_type'] == 2) {
-                        $inv_itemcard_batches = get_cols_where(
+                        $inv_itemcard_batches = HelperClass::get_cols_where(
                             new Inv_itemcard_batches(),
                             array("unit_cost_price", "quantity", "production_date", "expired_date", "auto_serial"),
                             array("com_code" => $com_code, "store_id" => $requesed['store_id'], "item_code" => $requesed['item_code'], "inv_uoms_id" => $parent_uom),
@@ -253,7 +253,7 @@ class Inv_production_exchangeController extends Controller
                             'ASC'
                         );
                     } else {
-                        $inv_itemcard_batches = get_cols_where(
+                        $inv_itemcard_batches = HelperClass::get_cols_where(
                             new Inv_itemcard_batches(),
                             array("unit_cost_price", "quantity", "auto_serial"),
                             array("com_code" => $com_code, "store_id" => $requesed['store_id'], "item_code" => $requesed['item_code'], "inv_uoms_id" => $parent_uom),
@@ -275,15 +275,15 @@ class Inv_production_exchangeController extends Controller
         try {
             if ($request->ajax()) {
                 $com_code = auth()->user()->com_code;
-                $invoice_data = get_cols_where_row(new Inv_production_exchange(), array("is_approved", "order_date", "production_lines_code", "id"), array("com_code" => $com_code, "auto_serial" => $request->autoserailparent, 'order_type' => 1));
+                $invoice_data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("is_approved", "order_date", "production_lines_code", "id"), array("com_code" => $com_code, "auto_serial" => $request->autoserailparent, 'order_type' => 1));
                 if (!empty($invoice_data)) {
                     if ($invoice_data['is_approved'] == 0) {
-                        $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id", "production_date", "expired_date"), array("com_code" => $com_code, "auto_serial" => $request->inv_itemcard_batches_autoserial, 'store_id' => $request->store_id, 'item_code' => $request->item_code));
+                        $batch_data = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id", "production_date", "expired_date"), array("com_code" => $com_code, "auto_serial" => $request->inv_itemcard_batches_autoserial, 'store_id' => $request->store_id, 'item_code' => $request->item_code));
                         if (!empty($batch_data)) {
                             if ($batch_data['quantity'] >= $request->item_quantity) {
-                                $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit", "item_type"), array("com_code" => $com_code, "item_code" => $request->item_code));
+                                $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit", "item_type"), array("com_code" => $com_code, "item_code" => $request->item_code));
                                 if (!empty($itemCard_Data)) {
-                                    $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                                    $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                                     $datainsert_items['inv_production_exchange_auto_serial'] = $request->autoserailparent;
                                     $datainsert_items['order_type'] = 1;
                                     $datainsert_items['inv_production_exchange_id'] = $invoice_data['id'];
@@ -301,12 +301,12 @@ class Inv_production_exchangeController extends Controller
                                     $datainsert_items['added_by'] = auth()->user()->id;
                                     $datainsert_items['created_at'] = date("Y-m-d H:i:s");
                                     $datainsert_items['com_code'] = $com_code;
-                                    $flag_datainsert_items = insert(new Inv_production_exchange_details(), $datainsert_items, true);
+                                    $flag_datainsert_items = HelperClass::insert(new Inv_production_exchange_details(), $datainsert_items, true);
                                     if (!empty($flag_datainsert_items)) {
                                         $this->recalclate_parent_invoice($request->autoserailparent);
                                         //خصم الكمية من الباتش
                                         //كمية الصنف بكل المخازن قبل الحركة
-                                        $quantityBeforMove = get_sum_where(
+                                        $quantityBeforMove = HelperClass::get_sum_where(
                                             new Inv_itemcard_batches(),
                                             "quantity",
                                             array(
@@ -315,7 +315,7 @@ class Inv_production_exchangeController extends Controller
                                             )
                                         );
                                         //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-                                        $quantityBeforMoveCurrntStore = get_sum_where(
+                                        $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                                             new Inv_itemcard_batches(),
                                             "quantity",
                                             array(
@@ -336,9 +336,9 @@ class Inv_production_exchangeController extends Controller
                                         $dataUpdateOldBatch['total_cost_price'] = $batch_data['unit_cost_price'] * $dataUpdateOldBatch['quantity'];
                                         $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                                         $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
-                                        $flag = update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
+                                        $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
                                         if ($flag) {
-                                            $quantityAfterMove = get_sum_where(
+                                            $quantityAfterMove = HelperClass::get_sum_where(
                                                 new Inv_itemcard_batches(),
                                                 "quantity",
                                                 array(
@@ -347,7 +347,7 @@ class Inv_production_exchangeController extends Controller
                                                 )
                                             );
                                             //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي بعد الحركة
-                                            $quantityAfterMoveCurrentStore = get_sum_where(
+                                            $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                                                 new Inv_itemcard_batches(),
                                                 "quantity",
                                                 array("item_code" => $request->item_code, "com_code" => $com_code, 'store_id' => $request->store_id)
@@ -375,10 +375,10 @@ class Inv_production_exchangeController extends Controller
                                             $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                                             $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                                             $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                                            $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                                            $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                                             if ($flag) {
                                                 //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                                                do_update_itemCardQuantity(
+                                                HelperClass::do_update_itemCardQuantity(
                                                     new Inv_itemCard(),
                                                     $request->item_code,
                                                     new Inv_itemcard_batches(),
@@ -405,16 +405,16 @@ class Inv_production_exchangeController extends Controller
     function recalclate_parent_invoice($auto_serial)
     {
         $com_code = auth()->user()->com_code;
-        $invoice_data = get_cols_where_row(new Inv_production_exchange(), array("*"), array("com_code" => $com_code, "auto_serial" => $auto_serial, 'order_type' => 1));
+        $invoice_data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("*"), array("com_code" => $com_code, "auto_serial" => $auto_serial, 'order_type' => 1));
         if (!empty($invoice_data)) {
             //first get sum of details
-            $dataUpdateParent['total_cost_items'] = get_sum_where(new Inv_production_exchange_details(), "total_price", array("com_code" => $com_code, "inv_production_exchange_auto_serial" => $auto_serial, 'order_type' => 1));
+            $dataUpdateParent['total_cost_items'] = HelperClass::get_sum_where(new Inv_production_exchange_details(), "total_price", array("com_code" => $com_code, "inv_production_exchange_auto_serial" => $auto_serial, 'order_type' => 1));
             $dataUpdateParent['total_cost'] = $dataUpdateParent['total_cost_items'];
             $dataUpdateParent['total_befor_discount'] = $dataUpdateParent['total_cost_items'];
             $dataUpdateParent['money_for_account'] = $dataUpdateParent['total_cost_items'];
             $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
             $dataUpdateParent['updated_by'] = auth()->user()->com_code;
-            update(new Inv_production_exchange(), $dataUpdateParent, array("com_code" => $com_code, "auto_serial" => $auto_serial, 'order_type' => 1));
+            HelperClass::update(new Inv_production_exchange(), $dataUpdateParent, array("com_code" => $com_code, "auto_serial" => $auto_serial, 'order_type' => 1));
         }
     }
 
@@ -423,7 +423,7 @@ class Inv_production_exchangeController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_production_exchange(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             if (!empty($data)) {
                 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                 $data['production_lines_name'] = Inv_production_lines::where('production_lines_code', $data['production_lines_code'])->value('name');
@@ -441,13 +441,13 @@ class Inv_production_exchangeController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $auto_serial = $request->autoserailparent;
-            $data = get_cols_where_row(new Inv_production_exchange(), array("is_approved", "id"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("is_approved", "id"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
 
-            $details = get_cols_where(new Inv_production_exchange_details(), array("*"), array('inv_production_exchange_auto_serial' => $auto_serial, 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
+            $details = HelperClass::get_cols_where(new Inv_production_exchange_details(), array("*"), array('inv_production_exchange_auto_serial' => $auto_serial, 'order_type' => 1, 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($details)) {
                 foreach ($details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                     $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                     if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                         $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
@@ -465,7 +465,7 @@ class Inv_production_exchangeController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Inv_production_exchange(), array("is_approved", "auto_serial", "store_id", "production_lines_code"), array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("is_approved", "auto_serial", "store_id", "production_lines_code"), array("id" => $parent_id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($parent_pill_data)) {
                 return redirect()->back()
                     ->with(['error' => ' عفوا حدث خطأ ما']);
@@ -482,12 +482,12 @@ class Inv_production_exchangeController extends Controller
                 if ($flag) {
                     /** update parent pill */
                     $this->recalclate_parent_invoice($parent_pill_data['auto_serial']);
-                    $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit", "item_type"), array("com_code" => $com_code, "item_code" => $item_row['item_code']));
-                    $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id", "production_date", "expired_date"), array("com_code" => $com_code, "auto_serial" => $item_row['batch_auto_serial'], 'store_id' => $parent_pill_data['store_id'], 'item_code' => $item_row['item_code']));
+                    $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit", "item_type"), array("com_code" => $com_code, "item_code" => $item_row['item_code']));
+                    $batch_data = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id", "production_date", "expired_date"), array("com_code" => $com_code, "auto_serial" => $item_row['batch_auto_serial'], 'store_id' => $parent_pill_data['store_id'], 'item_code' => $item_row['item_code']));
                     if (!empty($itemCard_Data) and !empty($batch_data)) {
                         //خصم الكمية من الباتش
                         //كمية الصنف بكل المخازن قبل الحركة
-                        $quantityBeforMove = get_sum_where(
+                        $quantityBeforMove = HelperClass::get_sum_where(
                             new Inv_itemcard_batches(),
                             "quantity",
                             array(
@@ -496,7 +496,7 @@ class Inv_production_exchangeController extends Controller
                             )
                         );
                         //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-                        $quantityBeforMoveCurrntStore = get_sum_where(
+                        $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                             new Inv_itemcard_batches(),
                             "quantity",
                             array(
@@ -517,9 +517,9 @@ class Inv_production_exchangeController extends Controller
                         $dataUpdateOldBatch['total_cost_price'] = $batch_data['unit_cost_price'] * $dataUpdateOldBatch['quantity'];
                         $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                         $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
-                        $flag = update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
+                        $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
                         if ($flag) {
-                            $quantityAfterMove = get_sum_where(
+                            $quantityAfterMove = HelperClass::get_sum_where(
                                 new Inv_itemcard_batches(),
                                 "quantity",
                                 array(
@@ -528,7 +528,7 @@ class Inv_production_exchangeController extends Controller
                                 )
                             );
                             //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي بعد الحركة
-                            $quantityAfterMoveCurrentStore = get_sum_where(
+                            $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                                 new Inv_itemcard_batches(),
                                 "quantity",
                                 array("item_code" => $item_row['item_code'], "com_code" => $com_code, 'store_id' => $parent_pill_data['store_id'])
@@ -543,7 +543,7 @@ class Inv_production_exchangeController extends Controller
                             $dataInsert_inv_itemcard_movements['FK_table_details'] = $item_row['id'];
                             $production_lines_name = Inv_production_lines::where('production_lines_code', $parent_pill_data['production_lines_code'])->value('name');
                             $dataInsert_inv_itemcard_movements['byan'] = " نظير حذف سطر الصنف من فاتورة صرف خامات  لخط الانتاج     " . " " . $production_lines_name . " فاتورة رقم" . " " . $parent_pill_data['auto_serial'];
-                            $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                            $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                             //كمية الصنف بكل المخازن قبل الحركة
                             $dataInsert_inv_itemcard_movements['quantity_befor_movement'] = "عدد " . " " . ($quantityBeforMove * 1) . " " . $MainUomName;
                             // كمية الصنف بكل المخازن بعد  الحركة
@@ -557,10 +557,10 @@ class Inv_production_exchangeController extends Controller
                             $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                             $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                             $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                            $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                            $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                             if ($flag) {
                                 //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                                do_update_itemCardQuantity(
+                                HelperClass::do_update_itemCardQuantity(
                                     new Inv_itemCard(),
                                     $item_row['item_code'],
                                     new Inv_itemcard_batches(),
@@ -599,7 +599,7 @@ class Inv_production_exchangeController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Inv_production_exchange(), array("is_approved", "auto_serial", "store_id", "production_lines_code"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("is_approved", "auto_serial", "store_id", "production_lines_code"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($parent_pill_data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا حدث خطأ ما']);
@@ -611,24 +611,24 @@ class Inv_production_exchangeController extends Controller
                 }
             }
             //حنجيب الاصناف المضافة علي الفاتورة
-            $items_details = get_cols_where(new Inv_production_exchange_details(), array("*"), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $parent_pill_data['auto_serial']));
+            $items_details = HelperClass::get_cols_where(new Inv_production_exchange_details(), array("*"), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $parent_pill_data['auto_serial']));
             //حنحذف الفاتورة الاب
-            $flag = delete(new Inv_production_exchange(), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $flag = HelperClass::delete(new Inv_production_exchange(), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if ($flag) {
                 //حنلف علي الاصناف المضافه علي الفاتورة ونطبق عليهم نفس اللي عملناها في حذف تفاصيل عنصر علي الفاتورة
                 if (!empty($items_details)) {
                     foreach ($items_details as $info) {
                         //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف
-                        $flagDelete = delete(new Inv_production_exchange_details(), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $parent_pill_data['auto_serial'], 'id' => $info->id));
+                        $flagDelete = HelperClass::delete(new Inv_production_exchange_details(), array("com_code" => $com_code, "order_type" => 1, "inv_production_exchange_auto_serial" => $parent_pill_data['auto_serial'], 'id' => $info->id));
                         if ($flagDelete) {
 
 
-                            $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit", "item_type"), array("com_code" => $com_code, "item_code" => $info->item_code));
-                            $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id", "production_date", "expired_date"), array("com_code" => $com_code, "auto_serial" => $info->batch_auto_serial, 'store_id' => $parent_pill_data['store_id'], 'item_code' => $info->item_code));
+                            $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit", "item_type"), array("com_code" => $com_code, "item_code" => $info->item_code));
+                            $batch_data = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id", "production_date", "expired_date"), array("com_code" => $com_code, "auto_serial" => $info->batch_auto_serial, 'store_id' => $parent_pill_data['store_id'], 'item_code' => $info->item_code));
                             if (!empty($itemCard_Data) and !empty($batch_data)) {
                                 //رد الي الكمية الي الباتش
                                 //كمية الصنف بكل المخازن قبل الحركة
-                                $quantityBeforMove = get_sum_where(
+                                $quantityBeforMove = HelperClass::get_sum_where(
                                     new Inv_itemcard_batches(),
                                     "quantity",
                                     array(
@@ -637,7 +637,7 @@ class Inv_production_exchangeController extends Controller
                                     )
                                 );
                                 //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-                                $quantityBeforMoveCurrntStore = get_sum_where(
+                                $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                                     new Inv_itemcard_batches(),
                                     "quantity",
                                     array(
@@ -658,9 +658,9 @@ class Inv_production_exchangeController extends Controller
                                 $dataUpdateOldBatch['total_cost_price'] = $batch_data['unit_cost_price'] * $dataUpdateOldBatch['quantity'];
                                 $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                                 $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
-                                $flag = update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
+                                $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
                                 if ($flag) {
-                                    $quantityAfterMove = get_sum_where(
+                                    $quantityAfterMove = HelperClass::get_sum_where(
                                         new Inv_itemcard_batches(),
                                         "quantity",
                                         array(
@@ -669,7 +669,7 @@ class Inv_production_exchangeController extends Controller
                                         )
                                     );
                                     //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي بعد الحركة
-                                    $quantityAfterMoveCurrentStore = get_sum_where(
+                                    $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                                         new Inv_itemcard_batches(),
                                         "quantity",
                                         array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $parent_pill_data['store_id'])
@@ -684,7 +684,7 @@ class Inv_production_exchangeController extends Controller
                                     $dataInsert_inv_itemcard_movements['FK_table_details'] = $info->id;
                                     $production_lines_name = Inv_production_lines::where('production_lines_code', $parent_pill_data['production_lines_code'])->value('name');
                                     $dataInsert_inv_itemcard_movements['byan'] = " نظير حذف سطر الصنف من فاتورة صرف خامات  لخط الانتاج     " . " " . $production_lines_name . " فاتورة رقم" . " " . $parent_pill_data['auto_serial'];
-                                    $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                                    $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                                     //كمية الصنف بكل المخازن قبل الحركة
                                     $dataInsert_inv_itemcard_movements['quantity_befor_movement'] = "عدد " . " " . ($quantityBeforMove * 1) . " " . $MainUomName;
                                     // كمية الصنف بكل المخازن بعد  الحركة
@@ -698,10 +698,10 @@ class Inv_production_exchangeController extends Controller
                                     $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                                     $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                                     $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                                    $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                                    $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                                     if ($flag) {
                                         //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                                        do_update_itemCardQuantity(
+                                        HelperClass::do_update_itemCardQuantity(
                                             new Inv_itemCard(),
                                             $info->item_code,
                                             new Inv_itemcard_batches(),
@@ -727,10 +727,10 @@ class Inv_production_exchangeController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_production_exchange(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("*"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
-            $counterDetails = get_count_where(new Inv_production_exchange_details(), array("inv_production_exchange_auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $counterDetails = HelperClass::get_count_where(new Inv_production_exchange_details(), array("inv_production_exchange_auto_serial" => $request->autoserailparent, "com_code" => $com_code, 'order_type' => 1));
             return view("admin.inv_production_exchange.load_modal_approve_invoice", ['data' => $data, 'user_shift' => $user_shift, 'counterDetails' => $counterDetails]);
         }
     }
@@ -739,7 +739,7 @@ class Inv_production_exchangeController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
         }
         return view("admin.inv_production_exchange.load_usershiftDiv", ['user_shift' => $user_shift]);
     }
@@ -748,7 +748,7 @@ class Inv_production_exchangeController extends Controller
     {
         $com_code = auth()->user()->com_code;
         //check is not approved
-        $data = get_cols_where_row(new Inv_production_exchange(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "production_lines_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+        $data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "production_lines_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
         if (empty($data)) {
             return redirect()->route("admin.inv_production_exchange.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
@@ -756,7 +756,7 @@ class Inv_production_exchangeController extends Controller
             return redirect()->route("admin.inv_production_exchange.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
         }
         $production_lines_name = Inv_production_lines::where('production_lines_code', $data['production_lines_code'])->value('name');
-        $counterDetails = get_count_where(new Inv_production_exchange_details(), array("inv_production_exchange_auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+        $counterDetails = HelperClass::get_count_where(new Inv_production_exchange_details(), array("inv_production_exchange_auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
         if ($counterDetails == 0) {
             return redirect()->route("admin.inv_production_exchange.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد الفاتورة قبل اضافة الأصناف عليها !!!            "]);
         }
@@ -793,13 +793,13 @@ class Inv_production_exchangeController extends Controller
                 return redirect()->route("admin.inv_production_exchange.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
             }
             //check for user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
             //chehck if is empty
             if (empty($user_shift)) {
                 return redirect()->route("admin.inv_production_exchange.show", $data['id'])->with(['error' => " عفوا لاتملتك الان شفت خزنة مفتوح لكي تتمكن من اتمام عمليه الصرف"]);
             }
         }
-        $flag = update(new Inv_production_exchange(), $dataUpdateParent, array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
+        $flag = HelperClass::update(new Inv_production_exchange(), $dataUpdateParent, array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 1));
         if ($flag) {
             //سيتم التحديث هنا عند استكمال دوره خط الانتاج
             //Affect on Supplier Balance  حنأثر في رصيد خط الانتاج
@@ -809,11 +809,11 @@ class Inv_production_exchangeController extends Controller
 
             if ($request['what_paid'] > 0) {
                 //first get isal number with treasuries
-                $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 if (empty($treasury_date)) {
                     return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
                 }
-                $last_record_treasuries_transactions_record = get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
+                $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
                 if (!empty($last_record_treasuries_transactions_record)) {
                     $dataInsert_treasuries_transactions['auto_serial'] = $last_record_treasuries_transactions_record['auto_serial'] + 1;
                 } else {
@@ -836,15 +836,15 @@ class Inv_production_exchangeController extends Controller
                 $dataInsert_treasuries_transactions['created_at'] = date("Y-m-Y H:i:s");
                 $dataInsert_treasuries_transactions['added_by'] = auth()->user()->id;
                 $dataInsert_treasuries_transactions['com_code'] = $com_code;
-                $flag = insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
+                $flag = HelperClass::insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
                 if ($flag) {
                     //update Treasuries last_isal_collect
                     $dataUpdateTreasuries['last_isal_collect'] = $dataInsert_treasuries_transactions['isal_number'];
-                    update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                    HelperClass::update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 }
             }
 
-            refresh_account_blance_ProductionLine($data['account_number'], new Account(), new Inv_production_lines(), new Treasuries_transactions(), new services_with_orders(), new Inv_production_exchange(), new inv_production_receive(), false);
+            HelperClass::refresh_account_blance_ProductionLine($data['account_number'], new Account(), new Inv_production_lines(), new Treasuries_transactions(), new services_with_orders(), new Inv_production_exchange(), new inv_production_receive(), false);
 
 
             return redirect()->route("admin.inv_production_exchange.show", $data['id'])->with(['success' => " تم اعتماد وترحيل الفاتورة بنجاح  "]);
@@ -951,7 +951,7 @@ class Inv_production_exchangeController extends Controller
 
         try {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new Inv_production_exchange(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
+            $invoice_data = HelperClass::get_cols_where_row(new Inv_production_exchange(), array("*"), array("id" => $id, "com_code" => $com_code, 'order_type' => 1));
             if (empty($invoice_data)) {
                 return redirect()->route('inv_production_exchange.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -959,14 +959,14 @@ class Inv_production_exchangeController extends Controller
             $invoice_data['production_lines_name'] = Inv_production_lines::where('production_lines_code', $invoice_data['production_lines_code'])->value('name');
             $invoice_data['production_lines_phones'] = Inv_production_lines::where('production_lines_code', $invoice_data['production_lines_code'])->value('phones');
             $invoice_data['store_name'] = Store::where('id', $invoice_data['store_id'])->value('name');
-            $invoices_details = get_cols_where(new Inv_production_exchange_details(), array("*"), array('inv_production_exchange_auto_serial' => $invoice_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'ASC');
+            $invoices_details = HelperClass::get_cols_where(new Inv_production_exchange_details(), array("*"), array('inv_production_exchange_auto_serial' => $invoice_data['auto_serial'], 'order_type' => 1, 'com_code' => $com_code), 'id', 'ASC');
             if (!empty($invoices_details)) {
                 foreach ($invoices_details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                 }
             }
-            $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+            $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
 
             if ($size == "A4") {
                 return view('admin.inv_production_exchange.printsaleswina4', ['data' => $invoice_data, 'systemData' => $systemData, 'sales_invoices_details' => $invoices_details]);

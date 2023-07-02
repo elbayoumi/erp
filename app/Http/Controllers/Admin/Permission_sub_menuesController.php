@@ -9,6 +9,7 @@ use App\Models\{
     Permission_sub_menues_actions,
 };
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Http\Requests\permission_sub_menuesequest;
 
@@ -28,7 +29,7 @@ class Permission_sub_menuesController extends Controller
                 }
 
 
-                $info->permission_sub_menues_actions = get_cols_where(new Permission_sub_menues_actions(), array("*"), array('com_code' => $com_code, "permission_sub_menues_id" => $info->id), 'id', 'DESC');
+                $info->permission_sub_menues_actions = HelperClass::get_cols_where(new Permission_sub_menues_actions(), array("*"), array('com_code' => $com_code, "permission_sub_menues_id" => $info->id), 'id', 'DESC');
                 if (!empty($info->permission_sub_menues_actions)) {
                     foreach ($info->permission_sub_menues_actions as $action) {
                         $action->added_by_admin = Admin::where('id', $action->added_by)->value('name');
@@ -39,7 +40,7 @@ class Permission_sub_menuesController extends Controller
                 }
             }
         }
-        $Permission_main_menues = get_cols_where(new Permission_main_menues(), array("id", "name"), array("active" => 1, 'com_code' => $com_code), 'id', 'ASC');
+        $Permission_main_menues = HelperClass::get_cols_where(new Permission_main_menues(), array("id", "name"), array("active" => 1, 'com_code' => $com_code), 'id', 'ASC');
         return view('admin.permission_sub_menues.index', ['data' => $data, 'Permission_main_menues' => $Permission_main_menues]);
     }
 
@@ -48,7 +49,7 @@ class Permission_sub_menuesController extends Controller
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $Permission_main_menues = get_cols_where(new Permission_main_menues(), array("id", "name"), array("active" => 1, 'com_code' => $com_code), 'id', 'ASC');
+        $Permission_main_menues = HelperClass::get_cols_where(new Permission_main_menues(), array("id", "name"), array("active" => 1, 'com_code' => $com_code), 'id', 'ASC');
         return view('admin.permission_sub_menues.create', ['Permission_main_menues' => $Permission_main_menues]);
     }
 
@@ -87,7 +88,7 @@ class Permission_sub_menuesController extends Controller
     {
         $com_code = auth()->user()->com_code;
         $data = Permission_sub_menues::select()->find($id);
-        $Permission_main_menues = get_cols_where(new Permission_main_menues(), array("id", "name"), array("active" => 1, 'com_code' => $com_code), 'id', 'ASC');
+        $Permission_main_menues = HelperClass::get_cols_where(new Permission_main_menues(), array("id", "name"), array("active" => 1, 'com_code' => $com_code), 'id', 'ASC');
         return view('admin.permission_sub_menues.edit', ['data' => $data, 'Permission_main_menues' => $Permission_main_menues]);
     }
     public function update($id, permission_sub_menuesequest $request)
@@ -153,7 +154,7 @@ class Permission_sub_menuesController extends Controller
                     }
 
 
-                    $info->permission_sub_menues_actions = get_cols_where(new Permission_sub_menues_actions(), array("*"), array('com_code' => $com_code, "permission_sub_menues_id" => $info->id), 'id', 'DESC');
+                    $info->permission_sub_menues_actions = HelperClass::get_cols_where(new Permission_sub_menues_actions(), array("*"), array('com_code' => $com_code, "permission_sub_menues_id" => $info->id), 'id', 'DESC');
                     if (!empty($info->permission_sub_menues_actions)) {
                         foreach ($info->permission_sub_menues_actions as $action) {
                             $action->added_by_admin = Admin::where('id', $action->added_by)->value('name');
@@ -194,7 +195,7 @@ class Permission_sub_menuesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Permission_sub_menues_actions(), array("id", "name"), array("com_code" => $com_code, 'id' => $request->id));
+            $data = HelperClass::get_cols_where_row(new Permission_sub_menues_actions(), array("id", "name"), array("com_code" => $com_code, 'id' => $request->id));
             return view('admin.permission_sub_menues.ajax_load_edit_permission', ['data' => $data]);
         }
     }
@@ -205,7 +206,7 @@ class Permission_sub_menuesController extends Controller
             $data_to_update['name'] = $request->name;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data['updated_at'] = date("Y-m-d H:i:s");
-            update(new Permission_sub_menues_actions(), $data_to_update, array("com_code" => $com_code, 'id' => $request->id));
+            HelperClass::update(new Permission_sub_menues_actions(), $data_to_update, array("com_code" => $com_code, 'id' => $request->id));
             echo json_encode("done");
         }
     }
@@ -218,7 +219,7 @@ class Permission_sub_menuesController extends Controller
             if (!empty($item_row)) {
                 $flag = $item_row->delete();
                 if ($flag) {
-                    delete(new Permission_sub_menues_actions(), array("com_code" => $com_code, 'permission_sub_menues_id' => $id));
+                    HelperClass::delete(new Permission_sub_menues_actions(), array("com_code" => $com_code, 'permission_sub_menues_id' => $id));
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);
                 } else {

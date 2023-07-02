@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\{
     Treasuries_transactions,
@@ -30,7 +31,7 @@ class ExchangeController extends Controller
     function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where2_p(new Treasuries_transactions(), array("*"), array("com_code" => $com_code), "money", "<", "0", "id", "DESC", PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where2_p(new Treasuries_transactions(), array("*"), array("com_code" => $com_code), "money", "<", "0", "id", "DESC", PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -43,27 +44,27 @@ class ExchangeController extends Controller
                 }
             }
         }
-        $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("treasuries_id", "shift_code"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
+        $checkExistsOpenShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("treasuries_id", "shift_code"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
         if (!empty($checkExistsOpenShift)) {
             $checkExistsOpenShift['treasuries_name'] = Treasuries::where('id', $checkExistsOpenShift['treasuries_id'])->value('name');
             //get Treasuries Balance
-            $checkExistsOpenShift['treasuries_balance_now'] = get_sum_where(new Treasuries_transactions(), "money", array("com_code" => $com_code, "shift_code" => $checkExistsOpenShift['shift_code']));
+            $checkExistsOpenShift['treasuries_balance_now'] = HelperClass::get_sum_where(new Treasuries_transactions(), "money", array("com_code" => $com_code, "shift_code" => $checkExistsOpenShift['shift_code']));
         }
-        $mov_type = get_cols_where(new Mov_type(), array("id", "name"), array("active" => 1, 'in_screen' => 1, 'is_private_internal' => 0), 'id', 'ASC');
-        $accounts = get_cols_where(new Account(), array("name", "account_number", "account_type"), array("com_code" => $com_code, "active" => 1, "is_parent" => 0), 'id', 'DESC');
+        $mov_type = HelperClass::get_cols_where(new Mov_type(), array("id", "name"), array("active" => 1, 'in_screen' => 1, 'is_private_internal' => 0), 'id', 'ASC');
+        $accounts = HelperClass::get_cols_where(new Account(), array("name", "account_number", "account_type"), array("com_code" => $com_code, "active" => 1, "is_parent" => 0), 'id', 'DESC');
         if (!empty($accounts)) {
             foreach ($accounts as $info) {
                 $info->account_type_name = Account_types::where(["id" => $info->account_type])->value("name");
             }
         }
-        $accounts_search = get_cols_where(new Account(), array("name", "account_number", "account_type"), array("com_code" => $com_code, "is_parent" => 0), 'id', 'DESC');
+        $accounts_search = HelperClass::get_cols_where(new Account(), array("name", "account_number", "account_type"), array("com_code" => $com_code, "is_parent" => 0), 'id', 'DESC');
         if (!empty($accounts_search)) {
             foreach ($accounts_search as $info) {
                 $info->account_type_name = Account_types::where(["id" => $info->account_type])->value("name");
             }
         }
-        $treasuries = get_cols_where(new Treasuries(), array("id", "name"), array("com_code" => $com_code), 'id', 'ASC');
-        $admins = get_cols_where(new Admin(), array("id", "name"), array("com_code" => $com_code), 'id', 'ASC');
+        $treasuries = HelperClass::get_cols_where(new Treasuries(), array("id", "name"), array("com_code" => $com_code), 'id', 'ASC');
+        $admins = HelperClass::get_cols_where(new Admin(), array("id", "name"), array("com_code" => $com_code), 'id', 'ASC');
         return view('admin.exchange_transaction.index', ['data' => $data, 'checkExistsOpenShift' => $checkExistsOpenShift, 'accounts' => $accounts, 'mov_type' => $mov_type, 'treasuries' => $treasuries, 'admins' => $admins, 'accounts_search' => $accounts_search]);
     }
     public function store(Exchange_transactionRequest $request)
@@ -71,16 +72,16 @@ class ExchangeController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             //check if user has open shift or not
-            $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("treasuries_id", "shift_code"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0, "treasuries_id" => $request->treasuries_id));
+            $checkExistsOpenShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("treasuries_id", "shift_code"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0, "treasuries_id" => $request->treasuries_id));
             if (empty($checkExistsOpenShift)) {
                 return redirect()->back()->with(['error' => "  عفوا لايوجد شفت خزنة مفتوح حاليا !!"])->withInput();
             }
             //first get isal number with treasuries
-            $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $request->treasuries_id));
+            $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $request->treasuries_id));
             if (empty($treasury_date)) {
                 return redirect()->back()->with(['error' => "  عفوا بيانات الخزنة المختارة غير موجوده !!"])->withInput();
             }
-            $last_record_treasuries_transactions_record = get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
+            $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
             if (!empty($last_record_treasuries_transactions_record)) {
                 $dataInsert['auto_serial'] = $last_record_treasuries_transactions_record['auto_serial'] + 1;
             } else {
@@ -102,21 +103,21 @@ class ExchangeController extends Controller
             $dataInsert['created_at'] = date("Y-m-Y H:i:s");
             $dataInsert['added_by'] = auth()->user()->id;
             $dataInsert['com_code'] = $com_code;
-            $flag = insert(new Treasuries_transactions(), $dataInsert);
+            $flag = HelperClass::insert(new Treasuries_transactions(), $dataInsert);
             if ($flag) {
                 //update Treasuries last_isal_collect
                 $dataUpdateTreasuries['last_isal_exhcange'] = $dataInsert['isal_number'];
-                update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $request->treasuries_id));
+                HelperClass::update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $request->treasuries_id));
                 $account_type = Account::where(["account_number" => $request->account_number])->value("account_type");
 
                 if ($account_type == 2) {
-                    $the_final_Balance = refresh_account_blance_supplier($request->account_number, new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
+                    $the_final_Balance = HelperClass::refresh_account_blance_supplier($request->account_number, new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
                 } elseif ($account_type == 3) {
-                    $the_final_Balance = refresh_account_blance_customer($request->account_number, new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), false);
+                    $the_final_Balance = HelperClass::refresh_account_blance_customer($request->account_number, new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), false);
                 } elseif ($account_type == 4) {
-                    $the_final_Balance =  refresh_account_blance_delegate($request->account_number, new Account(), new Delegate(), new Treasuries_transactions(), new Sales_invoices(), new services_with_orders(), false);
+                    $the_final_Balance =  HelperClass::refresh_account_blance_delegate($request->account_number, new Account(), new Delegate(), new Treasuries_transactions(), new Sales_invoices(), new services_with_orders(), false);
                 } else {
-                    $the_final_Balance = refresh_account_blance_General($request->account_number, new Account(), new Treasuries_transactions(), new services_with_orders(), false);
+                    $the_final_Balance = HelperClass::refresh_account_blance_General($request->account_number, new Account(), new Treasuries_transactions(), new services_with_orders(), false);
                 }
 
 
@@ -137,16 +138,16 @@ class ExchangeController extends Controller
             $AccountData =  Account::select("account_type")->where(["com_code" => $com_code, "account_number" => $account_number])->first();
             if (!empty($AccountData)) {
                 if ($AccountData['account_type'] == 2) {
-                    $the_final_Balance = refresh_account_blance_supplier($account_number, new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), true);
+                    $the_final_Balance = HelperClass::refresh_account_blance_supplier($account_number, new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), true);
                     return view('admin.collect_transactions.get_account_blance', ['the_final_Balance' => $the_final_Balance]);
                 } elseif ($AccountData['account_type'] == 3) {
-                    $the_final_Balance = refresh_account_blance_customer($account_number, new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), true);
+                    $the_final_Balance = HelperClass::refresh_account_blance_customer($account_number, new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), true);
                     return view('admin.collect_transactions.get_account_blance', ['the_final_Balance' => $the_final_Balance]);
                 } elseif ($AccountData['account_type'] == 4) {
-                    $the_final_Balance =  refresh_account_blance_delegate($account_number, new Account(), new Delegate(), new Treasuries_transactions(), new Sales_invoices(), new services_with_orders(), true);
+                    $the_final_Balance =  HelperClass::refresh_account_blance_delegate($account_number, new Account(), new Delegate(), new Treasuries_transactions(), new Sales_invoices(), new services_with_orders(), true);
                     return view('admin.collect_transactions.get_account_blance', ['the_final_Balance' => $the_final_Balance]);
                 } else {
-                    $the_final_Balance = refresh_account_blance_General($account_number, new Account(), new Treasuries_transactions(), new services_with_orders(), true);
+                    $the_final_Balance = HelperClass::refresh_account_blance_General($account_number, new Account(), new Treasuries_transactions(), new services_with_orders(), true);
                     return view('admin.collect_transactions.get_account_blance', ['the_final_Balance' => $the_final_Balance]);
                 }
             }

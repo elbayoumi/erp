@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\{
     Admins_Shifts,
@@ -25,15 +26,15 @@ class Admins_ShiftsContoller extends Controller
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Admins_Shifts(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
-        $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("id", "treasuries_id"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
+        $data = HelperClass::get_cols_where_p(new Admins_Shifts(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $checkExistsOpenShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id", "treasuries_id"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
 
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->admin_name = Admin::where('id', $info->admin_id)->value('name');
                 $info->treasuries_name = Treasuries::where('id', $info->treasuries_id)->value('name');
                 if ($info->is_finished == 1 and $info->is_delivered_and_review == 0  and !empty($checkExistsOpenShift)) {
-                    $check_permission_treasuries_delivery = get_cols_where_row(new Treasuries_delivery(), array("id"), array("com_code" => $com_code, "treasuries_id" => $checkExistsOpenShift['treasuries_id'], "treasuries_can_delivery_id" => $info->treasuries_id));
+                    $check_permission_treasuries_delivery = HelperClass::get_cols_where_row(new Treasuries_delivery(), array("id"), array("com_code" => $com_code, "treasuries_id" => $checkExistsOpenShift['treasuries_id'], "treasuries_can_delivery_id" => $info->treasuries_id));
                     if (!empty($check_permission_treasuries_delivery)) {
                         $info->can_review = true;
                     } else {
@@ -49,11 +50,11 @@ class Admins_ShiftsContoller extends Controller
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $admins_treasuries = get_cols_where(new Admins_treasuries(), array('treasuries_id'), array('com_code' => $com_code, 'active' => 1, 'admin_id' => auth()->user()->id), 'id', 'DESC');
+        $admins_treasuries = HelperClass::get_cols_where(new Admins_treasuries(), array('treasuries_id'), array('com_code' => $com_code, 'active' => 1, 'admin_id' => auth()->user()->id), 'id', 'DESC');
         if (!empty($admins_treasuries)) {
             foreach ($admins_treasuries as $info) {
                 $info->treasuries_name = Treasuries::where('id', $info->treasuries_id)->value('name');
-                $check_exsits_admins_shifts = get_cols_where_row(new Admins_Shifts(), array("id"), array("treasuries_id" => $info->treasuries_id, 'com_code' => $com_code, 'is_finished' => 0));
+                $check_exsits_admins_shifts = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id"), array("treasuries_id" => $info->treasuries_id, 'com_code' => $com_code, 'is_finished' => 0));
                 if (!empty($check_exsits_admins_shifts) and $check_exsits_admins_shifts != null) {
                     $info->avaliable = false;
                 } else {
@@ -70,17 +71,17 @@ class Admins_ShiftsContoller extends Controller
             $com_code = auth()->user()->com_code;
             $admin_id = auth()->user()->id;
             //check if not exsits open shift to current user
-            $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("id"), array("com_code" => $com_code, "admin_id" => $admin_id, "is_finished" => 0));
+            $checkExistsOpenShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id"), array("com_code" => $com_code, "admin_id" => $admin_id, "is_finished" => 0));
             if ($checkExistsOpenShift != null and !empty($checkExistsOpenShift)) {
                 return redirect()->route('admin_shift.index')->with(['error' => 'عفوا هناك شفت مفتوح لديك بالفعل حاليا ولايمكن فتح شفت جديد الا بعد اغلاق الشفت الحالي']);
             }
             //check if not exsits open shift to current treasuries_id
-            $checkExistsOpentreasuries = get_cols_where_row(new Admins_Shifts(), array("id"), array("com_code" => $com_code, "treasuries_id" => $request->treasuries_id, "is_finished" => 0));
+            $checkExistsOpentreasuries = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id"), array("com_code" => $com_code, "treasuries_id" => $request->treasuries_id, "is_finished" => 0));
             if ($checkExistsOpentreasuries != null and !empty($checkExistsOpentreasuries)) {
                 return redirect()->route('admin_shift.index')->with(['error' => '  عفوا الخزنة المختاره بالفعل مستخدمه حاليا لدي شفت اخر ولايمكن استخدامها الا بعد انتهاء الشفت الاخر']);
             }
             //set Shift code
-            $row = get_cols_where_row_orderby(new Admins_Shifts(), array("shift_code"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Admins_Shifts(), array("shift_code"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['shift_code'] = $row['shift_code'] + 1;
             } else {
@@ -93,7 +94,7 @@ class Admins_ShiftsContoller extends Controller
             $data_insert['added_by'] = auth()->user()->id;
             $data_insert['com_code'] = $com_code;
             $data_insert['date'] = date("Y-m-d");
-            $flag = insert(new Admins_Shifts(), $data_insert);
+            $flag = HelperClass::insert(new Admins_Shifts(), $data_insert);
             if ($flag) {
                 return redirect()->route('admin_shift.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
             } else {
@@ -113,17 +114,17 @@ class Admins_ShiftsContoller extends Controller
             $com_code = auth()->user()->com_code;
             $admin_id = auth()->user()->id;
             //check if not exsits open shift to current user
-            $checkExistsShift = get_cols_where_row(new Admins_Shifts(), array("id", "shift_code"), array("com_code" => $com_code, "admin_id" => $admin_id, "is_finished" => 0, 'id' => $shiftid));
+            $checkExistsShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id", "shift_code"), array("com_code" => $com_code, "admin_id" => $admin_id, "is_finished" => 0, 'id' => $shiftid));
             if ($checkExistsShift != null and !empty($checkExistsOpenShift)) {
                 return redirect()->route('admin_shift.index')->with(['error' => ' عفوا غير قادر علي الوصول الي بيانات الشفت']);
             }
 
-            $data_update['money_should_deviled'] = get_sum_where(new Treasuries_transactions(), "money", array("com_code" => $com_code, "shift_code" => $checkExistsShift['shift_code']));
+            $data_update['money_should_deviled'] = HelperClass::get_sum_where(new Treasuries_transactions(), "money", array("com_code" => $com_code, "shift_code" => $checkExistsShift['shift_code']));
             $data_update['is_finished'] = 1;
             $data_update['end_date'] = date("Y-m-d H:i:s");
             $data_update['updated_by'] = auth()->user()->id;
             $data_update['updated_at'] = date("Y-m-d H:i:s");
-            $flag = update(new Admins_Shifts(), $data_update, array("com_code" => $com_code, "admin_id" => $admin_id, "is_finished" => 0, 'id' => $shiftid));
+            $flag = HelperClass::update(new Admins_Shifts(), $data_update, array("com_code" => $com_code, "admin_id" => $admin_id, "is_finished" => 0, 'id' => $shiftid));
             if ($flag) {
                 return redirect()->route('admin_shift.index')->with(['success' => 'لقد تم اقفال الشفت  بنجاح']);
             } else {
@@ -141,7 +142,7 @@ class Admins_ShiftsContoller extends Controller
 
         try {
             $com_code = auth()->user()->com_code;
-            $Admins_Shifts = get_cols_where_row(new Admins_Shifts(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $Admins_Shifts = HelperClass::get_cols_where_row(new Admins_Shifts(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($Admins_Shifts)) {
                 return redirect()->route('admin_shift.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -152,13 +153,13 @@ class Admins_ShiftsContoller extends Controller
                 $Admins_Shifts['reviwed_by_admin_treasuries'] = Treasuries::where('id', $Admins_Shifts['delivered_to_treasuries_id'])->value('name');
             }
             //تفاصيل حركة النقدية بهذا الشفت
-            $treasuries_transactions = get_cols_where(new Treasuries_transactions(), array("*"), array('shift_code' => $Admins_Shifts['shift_code'],  'com_code' => $com_code), 'id', 'ASC');
+            $treasuries_transactions = HelperClass::get_cols_where(new Treasuries_transactions(), array("*"), array('shift_code' => $Admins_Shifts['shift_code'],  'com_code' => $com_code), 'id', 'ASC');
             if (!empty($treasuries_transactions)) {
                 foreach ($treasuries_transactions as $info) {
                     $info->mov_type_name = Mov_type::where('id', $info->mov_type)->value('name');
                 }
             }
-            $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+            $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
             $total_excahnge = Treasuries_transactions::where('com_code', '=', $com_code)->where('shift_code', '=', $Admins_Shifts['shift_code'])->where("money", "<", 0)->sum("money");
             $total_collect = Treasuries_transactions::where('com_code', '=', $com_code)->where('shift_code', '=', $Admins_Shifts['shift_code'])->where("money", ">", 0)->sum("money");
             $total_net = $total_excahnge + $total_collect;
@@ -174,8 +175,8 @@ class Admins_ShiftsContoller extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $admins_shifts_will_reviwed = get_cols_where_row(new Admins_Shifts(), array("*"), array("id" => $request->id, "com_code" => $com_code, "is_finished" => 1, "is_delivered_and_review" => 0));
-            $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("id", "treasuries_id"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
+            $admins_shifts_will_reviwed = HelperClass::get_cols_where_row(new Admins_Shifts(), array("*"), array("id" => $request->id, "com_code" => $com_code, "is_finished" => 1, "is_delivered_and_review" => 0));
+            $checkExistsOpenShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id", "treasuries_id"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
             return view('admin.admins_shifts.review_now', ['admins_shifts_will_reviwed' => $admins_shifts_will_reviwed, 'checkExistsOpenShift' => $checkExistsOpenShift]);
         }
     }
@@ -183,8 +184,8 @@ class Admins_ShiftsContoller extends Controller
     {
 
         $com_code = auth()->user()->com_code;
-        $admins_shifts_will_reviwed = get_cols_where_row(new Admins_Shifts(), array("*"), array("id" => $shiftid, "com_code" => $com_code, "is_finished" => 1, "is_delivered_and_review" => 0));
-        $checkExistsOpenShift = get_cols_where_row(new Admins_Shifts(), array("id", "treasuries_id", "shift_code"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
+        $admins_shifts_will_reviwed = HelperClass::get_cols_where_row(new Admins_Shifts(), array("*"), array("id" => $shiftid, "com_code" => $com_code, "is_finished" => 1, "is_delivered_and_review" => 0));
+        $checkExistsOpenShift = HelperClass::get_cols_where_row(new Admins_Shifts(), array("id", "treasuries_id", "shift_code"), array("com_code" => $com_code, "admin_id" => auth()->user()->id, "is_finished" => 0));
         if (empty($admins_shifts_will_reviwed)) {
             return redirect()->route('admin_shift.index')
                 ->with(['error' => 'عفوا غير قادر علي الوصول الي بيانات هذا الشفت']);
@@ -196,11 +197,11 @@ class Admins_ShiftsContoller extends Controller
 
 
         //first get isal number with treasuries
-        $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $checkExistsOpenShift['treasuries_id']));
+        $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $checkExistsOpenShift['treasuries_id']));
         if (empty($treasury_date)) {
             return redirect()->back()->with(['error' => "  عفوا بيانات الخزنة المختارة غير موجوده !!"])->withInput();
         }
-        $last_record_treasuries_transactions_record = get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
+        $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
         if (!empty($last_record_treasuries_transactions_record)) {
             $dataInsert['auto_serial'] = $last_record_treasuries_transactions_record['auto_serial'] + 1;
         } else {
@@ -222,9 +223,9 @@ class Admins_ShiftsContoller extends Controller
         $dataInsert['created_at'] = date("Y-m-Y H:i:s");
         $dataInsert['added_by'] = auth()->user()->id;
         $dataInsert['com_code'] = $com_code;
-        $flag = insert(new Treasuries_transactions(), $dataInsert);
+        $flag = HelperClass::insert(new Treasuries_transactions(), $dataInsert);
         if ($flag) {
-            $Treasuries_transactionsData = get_cols_where_row(new Treasuries_transactions(), array("id"), $dataInsert);
+            $Treasuries_transactionsData = HelperClass::get_cols_where_row(new Treasuries_transactions(), array("id"), $dataInsert);
             $dataToUpdate['is_delivered_and_review'] = 1;
             $dataToUpdate['delivered_to_admin_id'] = $checkExistsOpenShift['admin_id'];
             $dataToUpdate['delivered_to_admin_sift_id'] = $checkExistsOpenShift['shift_code'];
@@ -235,7 +236,7 @@ class Admins_ShiftsContoller extends Controller
             if (!empty($Treasuries_transactionsData)) {
                 $dataToUpdate['treasuries_transactions_id'] = $Treasuries_transactionsData['id'];
             }
-            update(new Admins_Shifts(), $dataToUpdate, array("id" => $shiftid, "com_code" => $com_code, "is_finished" => 1, "is_delivered_and_review" => 0));
+            HelperClass::update(new Admins_Shifts(), $dataToUpdate, array("id" => $shiftid, "com_code" => $com_code, "is_finished" => 1, "is_delivered_and_review" => 0));
         }
         return redirect()->back()->with(['success' => " تم مراجعة استلام نقدية الشفت بنجاح"])->withInput();
     }

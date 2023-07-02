@@ -11,7 +11,7 @@ use App\Models\{
     Inv_itemcard_batches,
     Store,
 };
-
+use Helpers\HelperClass;
 class ItemcardBalanceController extends Controller
 {
     public function index()
@@ -19,18 +19,18 @@ class ItemcardBalanceController extends Controller
         //get all itemscars ordery by quantity
         $com_code = auth()->user()->com_code;
 
-        $allitemscardData = get_cols_where_p(new Inv_itemCard(), array("id", "name", "item_code", "item_type", "does_has_retailunit", "retail_uom_id", "uom_id", "retail_uom_quntToParent", "All_QUENTITY"), array("com_code" => $com_code), "id", "ASC", PAGINATION_COUNT);
+        $allitemscardData = HelperClass::get_cols_where_p(new Inv_itemCard(), array("id", "name", "item_code", "item_type", "does_has_retailunit", "retail_uom_id", "uom_id", "retail_uom_quntToParent", "All_QUENTITY"), array("com_code" => $com_code), "id", "ASC", PAGINATION_COUNT);
         if (!empty($allitemscardData)) {
             foreach ($allitemscardData as $info) {
-                $info->inv_itemcard_categories_name = get_field_value(new inv_itemcard_categorie(), 'name', array('id' => $info->inv_itemcard_categories_id));
-                $info->Uom_name = get_field_value(new Inv_uom(), 'name', array('id' => $info->uom_id));
+                $info->inv_itemcard_categories_name = HelperClass::get_field_value(new inv_itemcard_categorie(), 'name', array('id' => $info->inv_itemcard_categories_id));
+                $info->Uom_name = HelperClass::get_field_value(new Inv_uom(), 'name', array('id' => $info->uom_id));
                 if ($info->does_has_retailunit == 1) {
-                    $info->retail_uom_name = get_field_value(new Inv_uom(), 'name', array('id' => $info->retail_uom_id));
+                    $info->retail_uom_name = HelperClass::get_field_value(new Inv_uom(), 'name', array('id' => $info->retail_uom_id));
                 }
-                $info->allBathces = get_cols_where_order2(new Inv_itemcard_batches(), array("*"), array("com_code" => $com_code, "item_code" => $info->item_code), 'store_id', 'ASC', 'quantity', 'DESC');
+                $info->allBathces = HelperClass::get_cols_where_order2(new Inv_itemcard_batches(), array("*"), array("com_code" => $com_code, "item_code" => $info->item_code), 'store_id', 'ASC', 'quantity', 'DESC');
                 if (!empty($info->allBathces)) {
                     foreach ($info->allBathces as $Det) {
-                        $Det->store_name = get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $Det->store_id));
+                        $Det->store_name = HelperClass::get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $Det->store_id));
                         if ($info->does_has_retailunit == 1) {
                             $Det->qunatityRetail = $Det->quantity * $info->retail_uom_quntToParent;
                             $Det->priceRetail = $Det->unit_cost_price / $info->retail_uom_quntToParent;
@@ -39,9 +39,9 @@ class ItemcardBalanceController extends Controller
                 }
             }
         }
-        $inv_itemcard_categories = get_cols_where(new inv_itemcard_categorie(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
-        $itemCardsSearch = get_cols_where(new Inv_itemCard(), array("item_code", "name"), array("com_code" => $com_code), 'id', 'ASC');
-        $storesSearch = get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code), 'id', 'ASC');
+        $inv_itemcard_categories = HelperClass::get_cols_where(new inv_itemcard_categorie(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'DESC');
+        $itemCardsSearch = HelperClass::get_cols_where(new Inv_itemCard(), array("item_code", "name"), array("com_code" => $com_code), 'id', 'ASC');
+        $storesSearch = HelperClass::get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code), 'id', 'ASC');
         return view('admin.itemcardBalance.index', ['allitemscardData' => $allitemscardData, 'inv_itemcard_categories' => $inv_itemcard_categories, 'itemCardsSearch' => $itemCardsSearch, 'storesSearch' => $storesSearch]);
     }
     public function ajax_search(Request $request)
@@ -122,16 +122,16 @@ class ItemcardBalanceController extends Controller
             }
             if (!empty($allitemscardData)) {
                 foreach ($allitemscardData as $info) {
-                    $info->inv_itemcard_categories_name = get_field_value(new inv_itemcard_categorie(), 'name', array('id' => $info->inv_itemcard_categories_id));
-                    $info->Uom_name = get_field_value(new Inv_uom(), 'name', array('id' => $info->uom_id));
+                    $info->inv_itemcard_categories_name = HelperClass::get_field_value(new inv_itemcard_categorie(), 'name', array('id' => $info->inv_itemcard_categories_id));
+                    $info->Uom_name = HelperClass::get_field_value(new Inv_uom(), 'name', array('id' => $info->uom_id));
                     if ($info->does_has_retailunit == 1) {
-                        $info->retail_uom_name = get_field_value(new Inv_uom(), 'name', array('id' => $info->retail_uom_id));
+                        $info->retail_uom_name = HelperClass::get_field_value(new Inv_uom(), 'name', array('id' => $info->retail_uom_id));
                     }
                     $info->allQuantitySearch = Inv_itemcard_batches::where($field2, $operator2, $value2)->where($field3, $operator3, $value3)->where($field4, $operator4, $value4)->where($field5, $operator5, $value5)->sum('quantity');
                     $info->allBathces = Inv_itemcard_batches::select("*")->where($field2, $operator2, $value2)->where($field3, $operator3, $value3)->where($field4, $operator4, $value4)->where($field5, $operator5, $value5)->orderBy('store_id', 'ASC')->orderBy('quantity', 'DESC')->get();
                     if (!empty($info->allBathces)) {
                         foreach ($info->allBathces as $Det) {
-                            $Det->store_name = get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $Det->store_id));
+                            $Det->store_name = HelperClass::get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $Det->store_id));
                             if ($info->does_has_retailunit == 1) {
                                 $Det->qunatityRetail = $Det->quantity * $info->retail_uom_quntToParent;
                                 $Det->priceRetail = $Det->unit_cost_price / $info->retail_uom_quntToParent;

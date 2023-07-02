@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\{
     Permission_rols,
@@ -15,7 +16,6 @@ use App\Models\{
     Permission_sub_menues,
 };
 use App\Http\Requests\Permission_rolesRequest;
-
 class Permission_rolesController extends Controller
 {
     public function index()
@@ -96,7 +96,7 @@ class Permission_rolesController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Permission_rols(), array("*"), array("com_code" => $com_code, "id" => $id));
+            $data = HelperClass::get_cols_where_row(new Permission_rols(), array("*"), array("com_code" => $com_code, "id" => $id));
             if (empty($data)) {
                 return redirect()->route('permission_roles.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -104,23 +104,23 @@ class Permission_rolesController extends Controller
             if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                 $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
             }
-            $Permission_main_menues = get_cols_where(new Permission_main_menues(), array("id", 'name'), array("active" => 1, "com_code" => $com_code));
-            $permission_roles_main_menus = get_cols_where(new Permission_roles_main_menus(), array("*"), array("com_code" => $com_code, "permission_roles_id" => $id));
+            $Permission_main_menues = HelperClass::get_cols_where(new Permission_main_menues(), array("id", 'name'), array("active" => 1, "com_code" => $com_code));
+            $permission_roles_main_menus = HelperClass::get_cols_where(new Permission_roles_main_menus(), array("*"), array("com_code" => $com_code, "permission_roles_id" => $id));
             if (!empty($permission_roles_main_menus)) {
                 foreach ($permission_roles_main_menus as $info) {
-                    $info->permission_main_menues_name = get_field_value(new Permission_main_menues(), "name", array("com_code" => $com_code, "id" => $info->permission_main_menues_id));
+                    $info->permission_main_menues_name = HelperClass::get_field_value(new Permission_main_menues(), "name", array("com_code" => $com_code, "id" => $info->permission_main_menues_id));
                     $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
 
-                    $info->permission_roles_sub_menu = get_cols_where(new Permission_roles_sub_menu(), array("*"), array("permission_roles_main_menus_id" => $info->id));
+                    $info->permission_roles_sub_menu = HelperClass::get_cols_where(new Permission_roles_sub_menu(), array("*"), array("permission_roles_main_menus_id" => $info->id));
                     if (!empty($info->permission_roles_sub_menu)) {
                         foreach ($info->permission_roles_sub_menu as $sub) {
-                            $sub->permission_sub_menues_name = get_field_value(new Permission_sub_menues(), "name", array("com_code" => $com_code, "id" => $sub->permission_sub_menues_id));
+                            $sub->permission_sub_menues_name = HelperClass::get_field_value(new Permission_sub_menues(), "name", array("com_code" => $com_code, "id" => $sub->permission_sub_menues_id));
                             $sub->added_by_admin = Admin::where('id', $sub->added_by)->value('name');
 
-                            $sub->permission_roles_sub_menues_actions = get_cols_where(new Permission_roles_sub_menues_actions(), array("*"), array("permission_roles_sub_menu_id" => $sub->id));
+                            $sub->permission_roles_sub_menues_actions = HelperClass::get_cols_where(new Permission_roles_sub_menues_actions(), array("*"), array("permission_roles_sub_menu_id" => $sub->id));
                             if (!empty($sub->permission_roles_sub_menues_actions)) {
                                 foreach ($sub->permission_roles_sub_menues_actions as $action) {
-                                    $action->permission_sub_menues_actions_name = get_field_value(new Permission_sub_menues_actions(), "name", array("com_code" => $com_code, "id" => $action->permission_sub_menues_actions_id));
+                                    $action->permission_sub_menues_actions_name = HelperClass::get_field_value(new Permission_sub_menues_actions(), "name", array("com_code" => $com_code, "id" => $action->permission_sub_menues_actions_id));
                                 }
                             }
                         }
@@ -150,11 +150,11 @@ class Permission_rolesController extends Controller
                 $dataToInsert['com_code'] = $com_code;
                 $dataToInsert['permission_roles_id'] = $id;
                 $dataToInsert['permission_main_menues_id'] = $info;
-                $checkExists = get_cols_where_row(new Permission_roles_main_menus(), array("id"), $dataToInsert);
+                $checkExists = HelperClass::get_cols_where_row(new Permission_roles_main_menus(), array("id"), $dataToInsert);
                 if (empty($checkExists)) {
                     $dataToInsert['added_by'] = auth()->user()->id;
                     $dataToInsert['created_at'] = date("Y-m-d H:i:s");
-                    insert(new Permission_roles_main_menus(), $dataToInsert);
+                    HelperClass::insert(new Permission_roles_main_menus(), $dataToInsert);
                 }
             }
             return redirect()->route('permission_roles.details', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
@@ -241,10 +241,10 @@ class Permission_rolesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $permission_roles_main_menus = get_cols_where_row(new Permission_roles_main_menus(), array("id", "permission_main_menues_id"), array("id" => $request->id, 'com_code' => $com_code));
+            $permission_roles_main_menus = HelperClass::get_cols_where_row(new Permission_roles_main_menus(), array("id", "permission_main_menues_id"), array("id" => $request->id, 'com_code' => $com_code));
             $permission_sub_menues = "";
             if (!empty($permission_roles_main_menus)) {
-                $permission_sub_menues = get_cols_where(new Permission_sub_menues(), array("id", "name"), array("com_code" => $com_code, 'permission_main_menues_id' => $permission_roles_main_menus['permission_main_menues_id']), 'id', 'ASC');
+                $permission_sub_menues = HelperClass::get_cols_where(new Permission_sub_menues(), array("id", "name"), array("com_code" => $com_code, 'permission_main_menues_id' => $permission_roles_main_menus['permission_main_menues_id']), 'id', 'ASC');
             }
             return view('admin.permission_roles.load_add_permission_roles_sub_menu', ['permission_roles_main_menus' => $permission_roles_main_menus, 'permission_sub_menues' => $permission_sub_menues]);
         }
@@ -254,10 +254,10 @@ class Permission_rolesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $permission_roles_sub_menu = get_cols_where_row(new Permission_roles_sub_menu(), array("id", "permission_sub_menues_id"), array("id" => $request->id));
+            $permission_roles_sub_menu = HelperClass::get_cols_where_row(new Permission_roles_sub_menu(), array("id", "permission_sub_menues_id"), array("id" => $request->id));
             $permission_sub_menues_actions = "";
             if (!empty($permission_roles_sub_menu)) {
-                $permission_sub_menues_actions = get_cols_where(new Permission_sub_menues_actions(), array("id", "name"), array("com_code" => $com_code, 'permission_sub_menues_id' => $permission_roles_sub_menu['permission_sub_menues_id']), 'id', 'ASC');
+                $permission_sub_menues_actions = HelperClass::get_cols_where(new Permission_sub_menues_actions(), array("id", "name"), array("com_code" => $com_code, 'permission_sub_menues_id' => $permission_roles_sub_menu['permission_sub_menues_id']), 'id', 'ASC');
             }
             return view('admin.permission_roles.load_add_permission_roles_sub_menues_actions', ['permission_roles_sub_menu' => $permission_roles_sub_menu, 'permission_sub_menues_actions' => $permission_sub_menues_actions]);
         }
@@ -283,11 +283,11 @@ class Permission_rolesController extends Controller
                 $dataToInsert['permission_roles_main_menus_id'] = $permission_roles_main_menus_id;
                 $dataToInsert['permission_sub_menues_id'] = $info;
                 $dataToInsert['permission_roles_id'] = $data['permission_roles_id'];
-                $checkExists = get_cols_where_row(new Permission_roles_sub_menu(), array("id"), $dataToInsert);
+                $checkExists = HelperClass::get_cols_where_row(new Permission_roles_sub_menu(), array("id"), $dataToInsert);
                 if (empty($checkExists)) {
                     $dataToInsert['added_by'] = auth()->user()->id;
                     $dataToInsert['created_at'] = date("Y-m-d H:i:s");
-                    insert(new Permission_roles_sub_menu(), $dataToInsert);
+                    HelperClass::insert(new Permission_roles_sub_menu(), $dataToInsert);
                 }
             }
             return redirect()->back()->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
@@ -319,11 +319,11 @@ class Permission_rolesController extends Controller
                 $dataToInsert['permission_roles_sub_menu_id'] = $permission_roles_sub_menu_id;
                 $dataToInsert['permission_sub_menues_actions_id'] = $info;
                 $dataToInsert['permission_roles_id'] = $data['permission_roles_id'];
-                $checkExists = get_cols_where_row(new Permission_roles_sub_menues_actions(), array("id"), $dataToInsert);
+                $checkExists = HelperClass::get_cols_where_row(new Permission_roles_sub_menues_actions(), array("id"), $dataToInsert);
                 if (empty($checkExists)) {
                     $dataToInsert['added_by'] = auth()->user()->id;
                     $dataToInsert['created_at'] = date("Y-m-d H:i:s");
-                    insert(new Permission_roles_sub_menues_actions(), $dataToInsert);
+                    HelperClass::insert(new Permission_roles_sub_menues_actions(), $dataToInsert);
                 }
             }
             return redirect()->back()->with(['success' => 'لقد تم اضافة البيانات بنجاح']);

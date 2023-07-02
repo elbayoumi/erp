@@ -15,13 +15,13 @@ use App\Http\Requests\{
     CustomerRequest,
     CustomerEditRequest,
 };
-
+use Helpers\HelperClass;
 class CustomerController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Customer(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Customer(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -42,21 +42,21 @@ class CustomerController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             //check if not exsits for name
-            $checkExists_name = get_cols_where_row(new Customer(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
+            $checkExists_name = HelperClass::get_cols_where_row(new Customer(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
             if (!empty($checkExists_name)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا اسم العميل مسجل من قبل'])
                     ->withInput();
             }
             //set customer code
-            $row = get_cols_where_row_orderby(new Customer(), array("customer_code"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Customer(), array("customer_code"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['customer_code'] = $row['customer_code'] + 1;
             } else {
                 $data_insert['customer_code'] = 1;
             }
             //set account number
-            $row = get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['account_number'] = $row['account_number'] + 1;
             } else {
@@ -89,7 +89,7 @@ class CustomerController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            $flag = insert(new Customer(), $data_insert);
+            $flag = HelperClass::insert(new Customer(), $data_insert);
             if ($flag) {
                 //insert into accounts
                 $data_insert_account['name'] = $request->name;
@@ -111,7 +111,7 @@ class CustomerController extends Controller
                     $data_insert_account['start_balance'] = 0;
                 }
                 $data_insert_account['current_balance'] = $data_insert_account['start_balance'];
-                $customer_parent_account_number = get_field_value(new Admin_panel_setting(), "customer_parent_account_number", array('com_code' => $com_code));
+                $customer_parent_account_number = HelperClass::get_field_value(new Admin_panel_setting(), "customer_parent_account_number", array('com_code' => $com_code));
                 $data_insert_account['notes'] = $request->notes;
                 $data_insert_account['parent_account_number'] = $customer_parent_account_number;
                 $data_insert_account['is_parent'] = 0;
@@ -123,7 +123,7 @@ class CustomerController extends Controller
                 $data_insert_account['date'] = date("Y-m-d");
                 $data_insert_account['com_code'] = $com_code;
                 $data_insert_account['other_table_FK'] = $data_insert['customer_code'];
-                $flag = insert(new Account(), $data_insert_account);
+                $flag = HelperClass::insert(new Account(), $data_insert_account);
             }
             return redirect()->route('customer.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
@@ -136,14 +136,14 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Customer(), array("*"), array("id" => $id, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new Customer(), array("*"), array("id" => $id, "com_code" => $com_code));
         return view('admin.customers.edit', ['data' => $data]);
     }
     public function update($id, CustomerEditRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Customer(), array("id", "account_number", "customer_code"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Customer(), array("id", "account_number", "customer_code"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('customers.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -160,13 +160,13 @@ class CustomerController extends Controller
             $data_to_update['active'] = $request->active;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            $flag = update(new Customer(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
+            $flag = HelperClass::update(new Customer(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
             if ($flag) {
                 $data_to_update_account['name'] = $request->name;
                 $data_to_update_account['updated_by'] = auth()->user()->id;
                 $data_to_update_account['updated_at'] = date("Y-m-d H:i:s");
                 $data_to_update_account['active'] = $request->active;
-                $flag = update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['customer_code'], 'com_code' => $com_code, 'account_type' => 3));
+                $flag = HelperClass::update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['customer_code'], 'com_code' => $com_code, 'account_type' => 3));
             }
             return redirect()->route('customer.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
@@ -181,9 +181,9 @@ class CustomerController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $item_row = get_cols_where_row(new Customer(), array("name"), array("id" => $id, "com_code" => $com_code));
+            $item_row = HelperClass::get_cols_where_row(new Customer(), array("name"), array("id" => $id, "com_code" => $com_code));
             if (!empty($item_row)) {
-                $flag = delete(new Customer(), ["id" => $id, "com_code" => $com_code]);
+                $flag = HelperClass::delete(new Customer(), ["id" => $id, "com_code" => $com_code]);
                 if ($flag) {
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);

@@ -14,13 +14,13 @@ use App\Http\Requests\{
     DelegatesRequestAdd,
     DelegatesUpdateRequest,
 };
-
+use Helpers\HelperClass;
 class DelegatesController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Delegate(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Delegate(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -40,7 +40,7 @@ class DelegatesController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             //check if not exsits for name
-            $checkExists_name = get_cols_where_row(new Delegate(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
+            $checkExists_name = HelperClass::get_cols_where_row(new Delegate(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
             if (!empty($checkExists_name)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا اسم المندوب مسجل من قبل'])
@@ -69,14 +69,14 @@ class DelegatesController extends Controller
                 }
             }
             //set delegate_code
-            $row = get_cols_where_row_orderby(new Delegate(), array("delegate_code"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Delegate(), array("delegate_code"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['delegate_code'] = $row['delegate_code'] + 1;
             } else {
                 $data_insert['delegate_code'] = 1;
             }
             //set account number نديله رقم حساب مالي بالشجرة المحاسبية
-            $row = get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['account_number'] = $row['account_number'] + 1;
             } else {
@@ -114,7 +114,7 @@ class DelegatesController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            $flag = insert(new Delegate(), $data_insert);
+            $flag = HelperClass::insert(new Delegate(), $data_insert);
             if ($flag) {
                 //insert into accounts حنفتح ليه حساب مالي بالشجرة المحاسبية
                 $data_insert_account['name'] = $request->name;
@@ -136,7 +136,7 @@ class DelegatesController extends Controller
                     $data_insert_account['start_balance'] = 0;
                 }
                 $data_insert_account['current_balance'] = $data_insert_account['start_balance'];
-                $delegates_parent_account_number = get_field_value(new Admin_panel_setting(), "delegate_parent_account_number", array('com_code' => $com_code));
+                $delegates_parent_account_number = HelperClass::get_field_value(new Admin_panel_setting(), "delegate_parent_account_number", array('com_code' => $com_code));
                 $data_insert_account['notes'] = $request->notes;
                 //المناديب الاب
                 $data_insert_account['parent_account_number'] = $delegates_parent_account_number;
@@ -149,7 +149,7 @@ class DelegatesController extends Controller
                 $data_insert_account['date'] = date("Y-m-d");
                 $data_insert_account['com_code'] = $com_code;
                 $data_insert_account['other_table_FK'] = $data_insert['delegate_code'];
-                $flag = insert(new Account(), $data_insert_account);
+                $flag = HelperClass::insert(new Account(), $data_insert_account);
             }
             return redirect()->route('delegates.index')->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
@@ -161,14 +161,14 @@ class DelegatesController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Delegate(), array("*"), array("id" => $id, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new Delegate(), array("*"), array("id" => $id, "com_code" => $com_code));
         return view('admin.delegates.edit', ['data' => $data]);
     }
     public function update($id, DelegatesUpdateRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Delegate(), array("id", "account_number", "delegate_code"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Delegate(), array("id", "account_number", "delegate_code"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('customers.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -190,13 +190,13 @@ class DelegatesController extends Controller
             $data_to_update['active'] = $request->active;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            $flag = update(new Delegate(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
+            $flag = HelperClass::update(new Delegate(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
             if ($flag) {
                 $data_to_update_account['name'] = $request->name;
                 $data_to_update_account['updated_by'] = auth()->user()->id;
                 $data_to_update_account['updated_at'] = date("Y-m-d H:i:s");
                 $data_to_update_account['active'] = $request->active;
-                $flag = update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['delegate_code'], 'com_code' => $com_code, 'account_type' => 4));
+                $flag = HelperClass::update(new Account(), $data_to_update_account, array('account_number' => $data['account_number'], 'other_table_FK' => $data['delegate_code'], 'com_code' => $com_code, 'account_type' => 4));
             }
             return redirect()->route('delegates.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
@@ -292,11 +292,11 @@ class DelegatesController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $id = $request->id;
-            $data = get_cols_where_row(new Delegate(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Delegate(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (!empty($data)) {
-                $data['added_by_admin'] = get_field_value(new Admin(), "name", array("id" => $data['added_by'], 'com_code' => $com_code));
+                $data['added_by_admin'] = HelperClass::get_field_value(new Admin(), "name", array("id" => $data['added_by'], 'com_code' => $com_code));
                 if ($data['updated_by'] > 0) {
-                    $data['updated_by_admin'] = get_field_value(new Admin(), "name", array("id" => $data['updated_by'], 'com_code' => $com_code));
+                    $data['updated_by_admin'] = HelperClass::get_field_value(new Admin(), "name", array("id" => $data['updated_by'], 'com_code' => $com_code));
                 }
             }
             return view('admin.delegates.show', ['data' => $data]);

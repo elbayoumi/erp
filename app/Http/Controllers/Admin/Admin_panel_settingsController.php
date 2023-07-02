@@ -9,13 +9,14 @@ use App\Models\{
 };
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin_panel_settings_Request;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 
 class Admin_panel_settingsController extends Controller
 {
     public function index()
     {
-        check_permission_sub_menue_actions_redirect(1);
+        HelperClass::check_permission_sub_menue_actions_redirect(1);
         $data = Admin_panel_setting::where('com_code', auth()->user()->com_code)->first();
         if (!empty($data)) {
             if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
@@ -31,14 +32,14 @@ class Admin_panel_settingsController extends Controller
     }
     public function edit()
     {
-        check_permission_sub_menue_actions_redirect(2);
+        HelperClass::check_permission_sub_menue_actions_redirect(2);
         $data = Admin_panel_setting::where('com_code', auth()->user()->com_code)->first();
-        $parent_accounts = get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => auth()->user()->com_code), 'id', 'ASC');
+        $parent_accounts = HelperClass::get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => auth()->user()->com_code), 'id', 'ASC');
         return view('admin.admin_panel_settings.edit', ['data' => $data, 'parent_accounts' => $parent_accounts]);
     }
     public function update(Admin_panel_settings_Request $request)
     {
-        check_permission_sub_menue_actions_redirect(2);
+        HelperClass::check_permission_sub_menue_actions_redirect(2);
         try {
             $admin_panel_setting = Admin_panel_setting::where('com_code', auth()->user()->com_code)->first();
             $admin_panel_setting->system_name = $request->system_name;
@@ -67,7 +68,7 @@ class Admin_panel_settingsController extends Controller
                 $request->validate([
                     'photo' => 'required|mimes:png,jpg,jpeg|max:2000',
                 ]);
-                $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
+                $the_file_path = HelperClass::uploadImage('assets/admin/uploads', $request->photo);
                 $admin_panel_setting->photo = $the_file_path;
                 if (file_exists('assets/admin/uploads/' . $oldphotoPath) and !empty($oldphotoPath)) {
                     unlink('assets/admin/uploads/' . $oldphotoPath);

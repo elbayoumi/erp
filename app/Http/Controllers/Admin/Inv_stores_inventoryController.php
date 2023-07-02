@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\{
     Admin,
@@ -22,7 +23,7 @@ class Inv_stores_inventoryController extends Controller
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Inv_stores_inventory(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Inv_stores_inventory(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -32,30 +33,30 @@ class Inv_stores_inventoryController extends Controller
                 }
             }
         }
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         return view('admin.inv_stores_inventory.index', ['data' => $data, 'stores' => $stores]);
     }
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $admin_panel_settings = get_cols_where_row(new Admin_panel_setting(), array("is_set_Batches_setting"), array("com_code" => $com_code));
+        $admin_panel_settings = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("is_set_Batches_setting"), array("com_code" => $com_code));
         if ($admin_panel_settings['is_set_Batches_setting'] == 0) {
             return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا يجب اولا تحديد  نوع آلية عمل الباتشات بالنظام بالضبط  العام	']);
         }
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         return view('admin.inv_stores_inventory.create', ['stores' => $stores]);
     }
     public function store(Inv_stores_inventoryRequest $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $counter_opnened_for_store = get_count_where(new Inv_stores_inventory(), array("com_code" => $com_code, 'store_id' => $request->store_id, 'is_closed' => 0));
+            $counter_opnened_for_store = HelperClass::get_count_where(new Inv_stores_inventory(), array("com_code" => $com_code, 'store_id' => $request->store_id, 'is_closed' => 0));
             if ($counter_opnened_for_store > 0) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا يوجد بالفعل أمر جرد مفتوح لهذا المخزن'])
                     ->withInput();
             }
-            $row = get_cols_where_row_orderby(new Inv_stores_inventory(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Inv_stores_inventory(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['auto_serial'] = $row['auto_serial'] + 1;
             } else {
@@ -69,7 +70,7 @@ class Inv_stores_inventoryController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            insert(new Inv_stores_inventory(), $data_insert);
+            HelperClass::insert(new Inv_stores_inventory(), $data_insert);
             return redirect()->route("admin.stores_inventory.index")->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -81,20 +82,20 @@ class Inv_stores_inventoryController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             if ($data['is_closed'] == 1) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
             }
-            $counterAddedDetails = get_count_where(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], 'com_code' => $com_code, 'is_closed' => 1));
+            $counterAddedDetails = HelperClass::get_count_where(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], 'com_code' => $com_code, 'is_closed' => 1));
             if ($counterAddedDetails > 0) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن حذف  امر جرد قد تم اعتماد اصناف عليه  ']);
             }
-            $flag = delete(new Inv_stores_inventory(), array("id" => $id, "com_code" => $com_code));
+            $flag = HelperClass::delete(new Inv_stores_inventory(), array("id" => $id, "com_code" => $com_code));
             if ($flag) {
-                delete(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], "com_code" => $com_code));
+                HelperClass::delete(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], "com_code" => $com_code));
                 return redirect()->route('stores_inventory.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
             }
         } catch (\Exception $ex) {
@@ -105,18 +106,18 @@ class Inv_stores_inventoryController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
         if (empty($data)) {
             return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
         }
         if ($data['is_closed'] == 1) {
             return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
         }
-        $counterAddedDetails = get_count_where(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], 'com_code' => $com_code));
+        $counterAddedDetails = HelperClass::get_count_where(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], 'com_code' => $com_code));
         if ($counterAddedDetails == 0) {
-            $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+            $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         } else {
-            $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'id' => $data['store_id']), 'id', 'ASC');
+            $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'id' => $data['store_id']), 'id', 'ASC');
         }
         return view('admin.inv_stores_inventory.edit', ['data' => $data, 'stores' => $stores]);
     }
@@ -124,7 +125,7 @@ class Inv_stores_inventoryController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -137,7 +138,7 @@ class Inv_stores_inventoryController extends Controller
                     ->with(['error' => 'عفوا  هناك امر جرد مازال مفتوح مع هذه المخزن '])
                     ->withInput();
             }
-            $counterAddedDetails = get_count_where(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], 'com_code' => $com_code));
+            $counterAddedDetails = HelperClass::get_count_where(new Inv_stores_inventory_details(), array("inv_stores_inventory_auto_serial" => $data['auto_serial'], 'com_code' => $com_code));
             if ($counterAddedDetails == 0) {
                 $data_to_update['store_id'] = $request->store_id;
             }
@@ -146,7 +147,7 @@ class Inv_stores_inventoryController extends Controller
             $data_to_update['notes'] = $request->notes;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            update(new Inv_stores_inventory(), $data_to_update, array("id" => $id, "com_code" => $com_code));
+            HelperClass::update(new Inv_stores_inventory(), $data_to_update, array("id" => $id, "com_code" => $com_code));
             return redirect()->route('stores_inventory.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -158,7 +159,7 @@ class Inv_stores_inventoryController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -168,7 +169,7 @@ class Inv_stores_inventoryController extends Controller
             if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                 $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
             }
-            $details = get_cols_where(new inv_stores_inventory_details(), array("*"), array('inv_stores_inventory_auto_serial' => $data['auto_serial'], 'com_code' => $com_code), 'id', 'DESC');
+            $details = HelperClass::get_cols_where(new inv_stores_inventory_details(), array("*"), array('inv_stores_inventory_auto_serial' => $data['auto_serial'], 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($details)) {
                 foreach ($details as $info) {
                     $info->item_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
@@ -199,7 +200,7 @@ class Inv_stores_inventoryController extends Controller
     {
         if ($_POST) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -220,7 +221,7 @@ class Inv_stores_inventoryController extends Controller
                     }
                     if (!empty($info->Batches)) {
                         foreach ($info->Batches as $batch) {
-                            $counter = get_count_where(new Inv_stores_inventory_details(), array("com_code" => $com_code, "inv_stores_inventory_auto_serial" => $data['auto_serial'], 'batch_auto_serial' => $batch->auto_serial, 'item_code' => $batch->item_code));
+                            $counter = HelperClass::get_count_where(new Inv_stores_inventory_details(), array("com_code" => $com_code, "inv_stores_inventory_auto_serial" => $data['auto_serial'], 'batch_auto_serial' => $batch->auto_serial, 'item_code' => $batch->item_code));
                             if ($counter == 0) {
                                 $data_insert['inv_stores_inventory_auto_serial'] = $data['auto_serial'];
                                 $data_insert['batch_auto_serial'] = $batch->auto_serial;
@@ -237,14 +238,14 @@ class Inv_stores_inventoryController extends Controller
                                 $data_insert['created_at'] = date("Y-m-d H:i:s");
                                 $data_insert['date'] = date("Y-m-d");
                                 $data_insert['com_code'] = $com_code;
-                                $flag = insert(new Inv_stores_inventory_details(), $data_insert);
+                                $flag = HelperClass::insert(new Inv_stores_inventory_details(), $data_insert);
                             }
                         }
                     }
                 }
             }
-            $data_to_update_parent['total_cost_batches'] = get_sum_where(new Inv_stores_inventory_details(), 'total_cost_price', array("com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
-            update(new Inv_stores_inventory(), $data_to_update_parent, array("com_code" => $com_code, "id" => $id, 'is_closed' => 0));
+            $data_to_update_parent['total_cost_batches'] = HelperClass::get_sum_where(new Inv_stores_inventory_details(), 'total_cost_price', array("com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
+            HelperClass::update(new Inv_stores_inventory(), $data_to_update_parent, array("com_code" => $com_code, "id" => $id, 'is_closed' => 0));
         }
         return redirect()->route('stores_inventory.show', $id)->with(['success' => 'تم اضافة البيانات بنجاح']);
     }
@@ -252,10 +253,10 @@ class Inv_stores_inventoryController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_closed'] == 0) {
-                    $item_data_detials = get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("inv_stores_inventory_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'id' => $request->id));
+                    $item_data_detials = HelperClass::get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("inv_stores_inventory_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'id' => $request->id));
                     return view("admin.inv_stores_inventory.load_edit_item_details", ['parent_pill_data' => $parent_pill_data, 'item_data_detials' => $item_data_detials]);
                 }
             }
@@ -265,14 +266,14 @@ class Inv_stores_inventoryController extends Controller
     {
         if ($_POST) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $parent_pill_id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $parent_pill_id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             if ($data['is_closed'] == 1) {
                 return redirect()->route('stores_inventory.show', $parent_pill_id)->with(['error' => 'عفوا لايمكن الاضافة علي امر جرد مغلق ومرحل !']);
             }
-            $dataDetails = get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $id, "com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
+            $dataDetails = HelperClass::get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $id, "com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
             if (empty($dataDetails)) {
                 return redirect()->route('stores_inventory.show', $parent_pill_id)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -285,9 +286,9 @@ class Inv_stores_inventoryController extends Controller
             $dataUpdateDetails['notes'] = $request->notes_edit;
             $dataUpdateDetails['updated_by'] = auth()->user()->id;
             $dataUpdateDetails['updated_at'] = date("Y-m-d H:i:s");
-            update(new Inv_stores_inventory_details(), $dataUpdateDetails, array("com_code" => $com_code, "id" => $id, 'is_closed' => 0, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
-            $data_to_update_parent['total_cost_batches'] = get_sum_where(new Inv_stores_inventory_details(), 'total_cost_price', array("com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
-            update(new Inv_stores_inventory(), $data_to_update_parent, array("com_code" => $com_code, "id" => $parent_pill_id, 'is_closed' => 0));
+            HelperClass::update(new Inv_stores_inventory_details(), $dataUpdateDetails, array("com_code" => $com_code, "id" => $id, 'is_closed' => 0, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
+            $data_to_update_parent['total_cost_batches'] = HelperClass::get_sum_where(new Inv_stores_inventory_details(), 'total_cost_price', array("com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data['auto_serial']));
+            HelperClass::update(new Inv_stores_inventory(), $data_to_update_parent, array("com_code" => $com_code, "id" => $parent_pill_id, 'is_closed' => 0));
         }
         return redirect()->route('stores_inventory.show', $parent_pill_id)->with(['success' => 'تم تحديث البيانات بنجاح']);
     }
@@ -295,14 +296,14 @@ class Inv_stores_inventoryController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data_parent = get_cols_where_row(new Inv_stores_inventory(), array("is_closed", "auto_serial"), array("id" => $id_parent, "com_code" => $com_code));
+            $data_parent = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("is_closed", "auto_serial"), array("id" => $id_parent, "com_code" => $com_code));
             if (empty($data_parent)) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             if ($data_parent['is_closed'] == 1) {
                 return redirect()->route('stores_inventory.show', $id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
             }
-            $Data_item_details = get_cols_where_row(new Inv_stores_inventory_details(), array("is_closed"), array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
+            $Data_item_details = HelperClass::get_cols_where_row(new Inv_stores_inventory_details(), array("is_closed"), array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
             if (empty($Data_item_details)) {
                 return redirect()->route('stores_inventory.show', $id_parent)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -311,10 +312,10 @@ class Inv_stores_inventoryController extends Controller
             }
 
             //حيتم الحذف بشكل الي من خلال العلاقه بين الجدولين ونقدر نستغني عن الكود الخاص بالحذف
-            $flag = delete(new Inv_stores_inventory_details(), array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial'], 'is_closed' => 0));
+            $flag = HelperClass::delete(new Inv_stores_inventory_details(), array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial'], 'is_closed' => 0));
             if ($flag) {
-                $data_to_update_parent['total_cost_batches'] = get_sum_where(new Inv_stores_inventory_details(), 'total_cost_price', array("com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
-                update(new Inv_stores_inventory(), $data_to_update_parent, array("com_code" => $com_code, "id" => $id_parent, 'is_closed' => 0));
+                $data_to_update_parent['total_cost_batches'] = HelperClass::get_sum_where(new Inv_stores_inventory_details(), 'total_cost_price', array("com_code" => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
+                HelperClass::update(new Inv_stores_inventory(), $data_to_update_parent, array("com_code" => $com_code, "id" => $id_parent, 'is_closed' => 0));
                 return redirect()->route('stores_inventory.show', $id_parent)->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
             }
         } catch (\Exception $ex) {
@@ -326,14 +327,14 @@ class Inv_stores_inventoryController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data_parent = get_cols_where_row(new Inv_stores_inventory(), array("is_closed", "auto_serial", "store_id"), array("id" => $id_parent, "com_code" => $com_code));
+            $data_parent = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("is_closed", "auto_serial", "store_id"), array("id" => $id_parent, "com_code" => $com_code));
             if (empty($data_parent)) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             if ($data_parent['is_closed'] == 1) {
                 return redirect()->route('stores_inventory.show', $id_parent)->with(['error' => 'عفوا لايمكن التحديث علي امر جرد مغلق ومرحل  ']);
             }
-            $Data_item_details = get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
+            $Data_item_details = HelperClass::get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
             if (empty($Data_item_details)) {
                 return redirect()->route('stores_inventory.show', $id_parent)->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -342,7 +343,7 @@ class Inv_stores_inventoryController extends Controller
             }
             //first we update Old pathc with new quantity
             //كمية الصنف بكل المخازن قبل الحركة
-            $quantityBeforMove = get_sum_where(
+            $quantityBeforMove = HelperClass::get_sum_where(
                 new Inv_itemcard_batches(),
                 "quantity",
                 array(
@@ -350,7 +351,7 @@ class Inv_stores_inventoryController extends Controller
                 )
             );
             //get Quantity Befor any Action  حنجيب كمية الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-            $quantityBeforMoveCurrntStore = get_sum_where(
+            $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                 new Inv_itemcard_batches(),
                 "quantity",
                 array(
@@ -362,15 +363,15 @@ class Inv_stores_inventoryController extends Controller
             $dataUpdateBatch['total_cost_price'] = $Data_item_details['total_cost_price'];
             $dataUpdateBatch['updated_by'] = auth()->user()->id;
             $dataUpdateBatch['updated_at'] = date("Y-m-d H:i:s");
-            $flag = update(new Inv_itemcard_batches(), $dataUpdateBatch, array("com_code" => $com_code, 'auto_serial' => $Data_item_details['batch_auto_serial'], 'item_code' => $Data_item_details['item_code']));
+            $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateBatch, array("com_code" => $com_code, 'auto_serial' => $Data_item_details['batch_auto_serial'], 'item_code' => $Data_item_details['item_code']));
             if ($flag) {
                 $dataUpdatedetails['is_closed'] = 1;
                 $dataUpdatedetails['cloased_by'] = auth()->user()->id;
                 $dataUpdatedetails['closed_at'] = date("Y-m-d H:i:s");
-                $flag = update(new Inv_stores_inventory_details(), $dataUpdatedetails, array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
+                $flag = HelperClass::update(new Inv_stores_inventory_details(), $dataUpdatedetails, array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
                 if ($flag) {
                     //كمية الصنف بكل المخازن بعد الحركة
-                    $quantityAfterMove = get_sum_where(
+                    $quantityAfterMove = HelperClass::get_sum_where(
                         new Inv_itemcard_batches(),
                         "quantity",
                         array(
@@ -378,7 +379,7 @@ class Inv_stores_inventoryController extends Controller
                         )
                     );
                     //كمية الصنف  بالمخزن الحالي بعد الحركة
-                    $quantityAfterMoveCurrentStore = get_sum_where(
+                    $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                         new Inv_itemcard_batches(),
                         "quantity",
                         array(
@@ -386,8 +387,8 @@ class Inv_stores_inventoryController extends Controller
                             'store_id' => $data_parent['store_id']
                         )
                     );
-                    $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $Data_item_details['inv_uoms_id']));
-                    $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $Data_item_details['item_code']));
+                    $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $Data_item_details['inv_uoms_id']));
+                    $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $Data_item_details['item_code']));
                     //التاثير في حركة كارت الصنف
                     $dataInsert_inv_itemcard_movements['inv_itemcard_movements_categories'] = 3;
                     $dataInsert_inv_itemcard_movements['items_movements_types'] = 6;
@@ -410,10 +411,10 @@ class Inv_stores_inventoryController extends Controller
                     $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                     $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                     $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                    $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                    $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                     if ($flag) {
                         //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                        do_update_itemCardQuantity(
+                        HelperClass::do_update_itemCardQuantity(
                             new Inv_itemCard(),
                             $Data_item_details['item_code'],
                             new Inv_itemcard_batches(),
@@ -433,21 +434,21 @@ class Inv_stores_inventoryController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data_parent = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code, 'is_closed' => 0));
+            $data_parent = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code, 'is_closed' => 0));
             if (empty($data_parent)) {
                 return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             if ($data_parent['is_closed'] == 1) {
                 return redirect()->route('stores_inventory.index')->with(['error' => 'عفوا لايمكن اغلاق امر جرد قد تم اغلاقه من قبل   ']);
             }
-            $details = get_cols_where(new inv_stores_inventory_details(), array("id"), array('inv_stores_inventory_auto_serial' => $data_parent['auto_serial'], 'com_code' => $com_code, 'is_closed' => 0), 'id', 'ASC');
+            $details = HelperClass::get_cols_where(new inv_stores_inventory_details(), array("id"), array('inv_stores_inventory_auto_serial' => $data_parent['auto_serial'], 'com_code' => $com_code, 'is_closed' => 0), 'id', 'ASC');
             if (!empty($details)) {
                 foreach ($details as $info) {
-                    $Data_item_details = get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $info->id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
+                    $Data_item_details = HelperClass::get_cols_where_row(new Inv_stores_inventory_details(), array("*"), array("id" => $info->id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
                     if (!empty($Data_item_details)) {
                         //first we update Old pathc with new quantity
                         //كمية الصنف بكل المخازن قبل الحركة
-                        $quantityBeforMove = get_sum_where(
+                        $quantityBeforMove = HelperClass::get_sum_where(
                             new Inv_itemcard_batches(),
                             "quantity",
                             array(
@@ -455,7 +456,7 @@ class Inv_stores_inventoryController extends Controller
                             )
                         );
                         //get Quantity Befor any Action  حنجيب كمية الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-                        $quantityBeforMoveCurrntStore = get_sum_where(
+                        $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                             new Inv_itemcard_batches(),
                             "quantity",
                             array(
@@ -467,15 +468,15 @@ class Inv_stores_inventoryController extends Controller
                         $dataUpdateBatch['total_cost_price'] = $Data_item_details['total_cost_price'];
                         $dataUpdateBatch['updated_by'] = auth()->user()->id;
                         $dataUpdateBatch['updated_at'] = date("Y-m-d H:i:s");
-                        $flag = update(new Inv_itemcard_batches(), $dataUpdateBatch, array("com_code" => $com_code, 'auto_serial' => $Data_item_details['batch_auto_serial'], 'item_code' => $Data_item_details['item_code']));
+                        $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateBatch, array("com_code" => $com_code, 'auto_serial' => $Data_item_details['batch_auto_serial'], 'item_code' => $Data_item_details['item_code']));
                         if ($flag) {
                             $dataUpdatedetails['is_closed'] = 1;
                             $dataUpdatedetails['cloased_by'] = auth()->user()->id;
                             $dataUpdatedetails['closed_at'] = date("Y-m-d H:i:s");
-                            $flag = update(new Inv_stores_inventory_details(), $dataUpdatedetails, array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
+                            $flag = HelperClass::update(new Inv_stores_inventory_details(), $dataUpdatedetails, array("id" => $id, 'com_code' => $com_code, 'inv_stores_inventory_auto_serial' => $data_parent['auto_serial']));
                             if ($flag) {
                                 //كمية الصنف بكل المخازن بعد الحركة
-                                $quantityAfterMove = get_sum_where(
+                                $quantityAfterMove = HelperClass::get_sum_where(
                                     new Inv_itemcard_batches(),
                                     "quantity",
                                     array(
@@ -483,7 +484,7 @@ class Inv_stores_inventoryController extends Controller
                                     )
                                 );
                                 //كمية الصنف  بالمخزن الحالي بعد الحركة
-                                $quantityAfterMoveCurrentStore = get_sum_where(
+                                $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                                     new Inv_itemcard_batches(),
                                     "quantity",
                                     array(
@@ -491,8 +492,8 @@ class Inv_stores_inventoryController extends Controller
                                         'store_id' => $data_parent['store_id']
                                     )
                                 );
-                                $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $Data_item_details['inv_uoms_id']));
-                                $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $Data_item_details['item_code']));
+                                $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $Data_item_details['inv_uoms_id']));
+                                $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $Data_item_details['item_code']));
                                 //التاثير في حركة كارت الصنف
                                 $dataInsert_inv_itemcard_movements['inv_itemcard_movements_categories'] = 3;
                                 $dataInsert_inv_itemcard_movements['items_movements_types'] = 6;
@@ -515,10 +516,10 @@ class Inv_stores_inventoryController extends Controller
                                 $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                                 $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                                 $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                                $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                                $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                                 if ($flag) {
                                     //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                                    do_update_itemCardQuantity(
+                                    HelperClass::do_update_itemCardQuantity(
                                         new Inv_itemCard(),
                                         $Data_item_details['item_code'],
                                         new Inv_itemcard_batches(),
@@ -534,7 +535,7 @@ class Inv_stores_inventoryController extends Controller
             $dataUpdateparent['is_closed'] = 1;
             $dataUpdateparent['cloased_by'] = auth()->user()->id;
             $dataUpdateparent['closed_at'] = date("Y-m-d H:i:s");
-            $flag = update(new Inv_stores_inventory(), $dataUpdateparent, array("id" => $id, 'com_code' => $com_code));
+            $flag = HelperClass::update(new Inv_stores_inventory(), $dataUpdateparent, array("id" => $id, 'com_code' => $com_code));
             return redirect()->route('stores_inventory.show', $id)->with(['success' => 'لقد تم ترحيل واغلاق امر الجرد بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -641,14 +642,14 @@ class Inv_stores_inventoryController extends Controller
 
         try {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $invoice_data = HelperClass::get_cols_where_row(new Inv_stores_inventory(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($invoice_data)) {
                 return redirect()->route('inv_stores_inventory.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
             $invoice_data['store_name'] = Store::where('id', $invoice_data['store_id'])->value('name');
 
             $invoice_data['added_by_admin'] = Admin::where('id', $invoice_data['added_by'])->value('name');
-            $invoices_details = get_cols_where(new Inv_stores_inventory_details(), array("*"), array('inv_stores_inventory_auto_serial' => $invoice_data['auto_serial'], 'com_code' => $com_code), 'id', 'ASC');
+            $invoices_details = HelperClass::get_cols_where(new Inv_stores_inventory_details(), array("*"), array('inv_stores_inventory_auto_serial' => $invoice_data['auto_serial'], 'com_code' => $com_code), 'id', 'ASC');
             if (!empty($invoices_details)) {
                 foreach ($invoices_details as $info) {
                     $info->item_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
@@ -662,7 +663,7 @@ class Inv_stores_inventoryController extends Controller
 
 
 
-            $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+            $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
 
             if ($size == "A4") {
                 return view('admin.inv_stores_inventory.printsaleswina4', ['data' => $invoice_data, 'systemData' => $systemData, 'invoices_details' => $invoices_details]);

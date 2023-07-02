@@ -16,13 +16,14 @@ use App\Http\Requests\{
     AdminRequest,
     AdminRequestUpdate,
 };
+use Helpers\HelperClass;
 
 class AdminController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Admin(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Admin(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -32,14 +33,14 @@ class AdminController extends Controller
                 }
             }
         }
-        $Permission_rols = get_cols_where(new Permission_rols(), array("id", "name"), array("active" => 1, 'com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $Permission_rols = HelperClass::get_cols_where(new Permission_rols(), array("id", "name"), array("active" => 1, 'com_code' => $com_code, 'active' => 1), 'id', 'ASC');
 
         return view('admin.admins_accounts.index', ['data' => $data, 'Permission_rols' => $Permission_rols]);
     }
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $Permission_rols = get_cols_where(new Permission_rols(), array("id", "name"), array("active" => 1, 'com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $Permission_rols = HelperClass::get_cols_where(new Permission_rols(), array("id", "name"), array("active" => 1, 'com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         return view('admin.admins_accounts.create', ['Permission_rols' => $Permission_rols]);
     }
     public function store(AdminRequest $request)
@@ -86,15 +87,15 @@ class AdminController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
-        $Permission_rols = get_cols_where(new Permission_rols(), array("id", "name"), array("active" => 1, 'com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
+        $Permission_rols = HelperClass::get_cols_where(new Permission_rols(), array("id", "name"), array("active" => 1, 'com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         return view('admin.admins_accounts.edit', ['data' => $data, 'Permission_rols' => $Permission_rols]);
     }
     public function update($id, AdminRequestUpdate $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
+            $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
 
             if (empty($data)) {
                 return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
@@ -144,7 +145,7 @@ class AdminController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
+            $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
             if (empty($data)) {
                 return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -153,10 +154,10 @@ class AdminController extends Controller
             if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                 $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
             }
-            $treasuries = get_cols_where(new Treasuries(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
-            $stores = get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
+            $treasuries = HelperClass::get_cols_where(new Treasuries(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
+            $stores = HelperClass::get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
 
-            $admins_treasuries = get_cols_where(new Admins_treasuries(), array("*"), array("com_code" => $com_code, "admin_id" => $id));
+            $admins_treasuries = HelperClass::get_cols_where(new Admins_treasuries(), array("*"), array("com_code" => $com_code, "admin_id" => $id));
             if (!empty($admins_treasuries)) {
                 foreach ($admins_treasuries as $info) {
                     $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -167,7 +168,7 @@ class AdminController extends Controller
                 }
             }
 
-            $admins_stores = get_cols_where(new Admins_stores(), array("*"), array("com_code" => $com_code, "admin_id" => $id));
+            $admins_stores = HelperClass::get_cols_where(new Admins_stores(), array("*"), array("com_code" => $com_code, "admin_id" => $id));
             if (!empty($admins_stores)) {
                 foreach ($admins_stores as $info) {
                     $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -193,7 +194,7 @@ class AdminController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
+            $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
             if (empty($data)) {
                 return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -205,13 +206,13 @@ class AdminController extends Controller
                 $dataToInsert['com_code'] = $com_code;
                 $dataToInsert['admin_id'] = $id;
                 $dataToInsert['treasuries_id'] = $info;
-                $checkExists = get_cols_where_row(new Admins_treasuries(), array("id"), $dataToInsert);
+                $checkExists = HelperClass::get_cols_where_row(new Admins_treasuries(), array("id"), $dataToInsert);
                 if (empty($checkExists)) {
                     $dataToInsert['added_by'] = auth()->user()->id;
                     $dataToInsert['active'] = 1;
                     $dataToInsert['created_at'] = date("Y-m-d H:i:s");
                     $dataToInsert['date'] = date("Y-m-d");
-                    insert(new Admins_treasuries(), $dataToInsert);
+                    HelperClass::insert(new Admins_treasuries(), $dataToInsert);
                 }
             }
             return redirect()->route('admins_accounts.details', $id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
@@ -228,7 +229,7 @@ class AdminController extends Controller
         try {
 
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $userid));
+            $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $userid));
             if (empty($data)) {
                 return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -256,7 +257,7 @@ class AdminController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
+            $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $id));
             if (empty($data)) {
                 return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -268,13 +269,13 @@ class AdminController extends Controller
                 $dataToInsert['com_code'] = $com_code;
                 $dataToInsert['admin_id'] = $id;
                 $dataToInsert['store_id'] = $info;
-                $checkExists = get_cols_where_row(new Admins_stores(), array("id"), $dataToInsert);
+                $checkExists = HelperClass::get_cols_where_row(new Admins_stores(), array("id"), $dataToInsert);
                 if (empty($checkExists)) {
                     $dataToInsert['added_by'] = auth()->user()->id;
                     $dataToInsert['active'] = 1;
                     $dataToInsert['created_at'] = date("Y-m-d H:i:s");
                     $dataToInsert['date'] = date("Y-m-d");
-                    insert(new Admins_stores(), $dataToInsert);
+                    HelperClass::insert(new Admins_stores(), $dataToInsert);
                 }
             }
             return redirect()->route('admins_accounts.details', $id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
@@ -290,13 +291,13 @@ class AdminController extends Controller
         try {
 
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $userid));
+            $data = HelperClass::get_cols_where_row(new Admin(), array("*"), array("com_code" => $com_code, "id" => $userid));
             if (empty($data)) {
                 return redirect()->route('admins_accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
 
 
-            $flag = delete(new Admins_stores(), array("admin_id" => $userid, 'id' => $rowid, "com_code" => $com_code));
+            $flag = HelperClass::delete(new Admins_stores(), array("admin_id" => $userid, 'id' => $rowid, "com_code" => $com_code));
             if ($flag) {
                 return redirect()->back()
                     ->with(['success' => '   تم حذف البيانات بنجاح']);

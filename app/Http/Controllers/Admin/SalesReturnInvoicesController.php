@@ -26,27 +26,27 @@ use App\Models\{
     Sales_invoices,
     services_with_orders,
 };
-
+use Helpers\HelperClass;
 class SalesReturnInvoicesController extends Controller
 {
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new SalesReturn(), array("*"), array("com_code" => $com_code), "id", "DESC", PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new SalesReturn(), array("*"), array("com_code" => $com_code), "id", "DESC", PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
-                $info->Sales_matrial_types_name = get_field_value(new Sales_matrial_types(), "name", array("com_code" => $com_code, "id" => $info->sales_matrial_types));
+                $info->Sales_matrial_types_name = HelperClass::get_field_value(new Sales_matrial_types(), "name", array("com_code" => $com_code, "id" => $info->sales_matrial_types));
                 if ($info->is_has_customer == 1) {
-                    $info->customer_name = get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $info->customer_code));
+                    $info->customer_name = HelperClass::get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $info->customer_code));
                 } else {
                     $info->customer_name = "بدون عميل";
                 }
             }
         }
-        $delegates = get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "active" => 1));
-        $customers = get_cols_where(new Customer(), array("customer_code", "name"), array("com_code" => $com_code, "active" => 1));
-        $Sales_matrial_types = get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
+        $delegates = HelperClass::get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "active" => 1));
+        $customers = HelperClass::get_cols_where(new Customer(), array("customer_code", "name"), array("com_code" => $com_code, "active" => 1));
+        $Sales_matrial_types = HelperClass::get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
         return view("admin.sales_return_invoices.index", ['data' => $data, 'delegates' => $delegates, 'customers' => $customers, 'Sales_matrial_types' => $Sales_matrial_types]);
     }
     public function get_item_uoms(Request $request)
@@ -54,13 +54,13 @@ class SalesReturnInvoicesController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             $item_code = $request->item_code;
-            $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_code, "com_code" => $com_code));
+            $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("does_has_retailunit", "retail_uom_id", "uom_id"), array("item_code" => $item_code, "com_code" => $com_code));
             if (!empty($item_card_Data)) {
                 if ($item_card_Data['does_has_retailunit'] == 1) {
-                    $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
-                    $item_card_Data['retial_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
+                    $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                    $item_card_Data['retial_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['retail_uom_id']));
                 } else {
-                    $item_card_Data['parent_uom_name'] = get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
+                    $item_card_Data['parent_uom_name'] = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $item_card_Data['uom_id']));
                 }
             }
             return view("admin.sales_return_invoices.get_item_uoms", ['item_card_Data' => $item_card_Data]);
@@ -71,9 +71,9 @@ class SalesReturnInvoicesController extends Controller
     {
         $com_code = auth()->user()->com_code;
         if ($request->ajax()) {
-            $item_cards = get_cols_where(new Inv_itemCard(), array("item_code", "name", "item_type"), array("com_code" => $com_code, "active" => 1));
-            $stores = get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code, "active" => 1), 'id', 'ASC');
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $item_cards = HelperClass::get_cols_where(new Inv_itemCard(), array("item_code", "name", "item_type"), array("com_code" => $com_code, "active" => 1));
+            $stores = HelperClass::get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code, "active" => 1), 'id', 'ASC');
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
             return view("admin.sales_return_invoices.loadModalAddInvoiceMirror", ['item_cards' => $item_cards, 'stores' => $stores, 'user_shift' => $user_shift]);
         }
     }
@@ -82,8 +82,8 @@ class SalesReturnInvoicesController extends Controller
     {
         $com_code = auth()->user()->com_code;
         if ($request->ajax()) {
-            $delegates = get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "active" => 1));
-            $Sales_matrial_types = get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
+            $delegates = HelperClass::get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "active" => 1));
+            $Sales_matrial_types = HelperClass::get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
             return view("admin.sales_return_invoices.load_modal_addActiveInvoice", [
                 'delegates' => $delegates, 'Sales_matrial_types' => $Sales_matrial_types
             ]);
@@ -93,17 +93,17 @@ class SalesReturnInvoicesController extends Controller
     {
         $com_code = auth()->user()->com_code;
         if ($request->ajax()) {
-            $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("item_type", "uom_id", "retail_uom_quntToParent"), array("com_code" => $com_code, "item_code" => $request->item_code));
+            $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("item_type", "uom_id", "retail_uom_quntToParent"), array("com_code" => $com_code, "item_code" => $request->item_code));
             if (!empty($item_card_Data)) {
                 $requesed['uom_id'] = $request->uom_id;
                 $requesed['store_id'] = $request->store_id;
                 $requesed['item_code'] = $request->item_code;
                 $parent_uom = $item_card_Data['uom_id'];
-                $uom_Data = get_cols_where_row(new Inv_uom(), array("name", "is_master"), array("com_code" => $com_code, "id" => $requesed['uom_id']));
+                $uom_Data = HelperClass::get_cols_where_row(new Inv_uom(), array("name", "is_master"), array("com_code" => $com_code, "id" => $requesed['uom_id']));
                 if (!empty($uom_Data)) {
                     //لو صنف مخزني يبقي ههتم بالتواريخ
                     if ($item_card_Data['item_type'] == 2) {
-                        $inv_itemcard_batches = get_cols_where(
+                        $inv_itemcard_batches = HelperClass::get_cols_where(
                             new Inv_itemcard_batches(),
                             array("unit_cost_price", "quantity", "production_date", "expired_date", "auto_serial"),
                             array("com_code" => $com_code, "store_id" => $requesed['store_id'], "item_code" => $requesed['item_code'], "inv_uoms_id" => $parent_uom),
@@ -111,7 +111,7 @@ class SalesReturnInvoicesController extends Controller
                             'ASC'
                         );
                     } else {
-                        $inv_itemcard_batches = get_cols_where(
+                        $inv_itemcard_batches = HelperClass::get_cols_where(
                             new Inv_itemcard_batches(),
                             array("unit_cost_price", "quantity", "auto_serial"),
                             array("com_code" => $com_code, "store_id" => $requesed['store_id'], "item_code" => $requesed['item_code'], "inv_uoms_id" => $parent_uom),
@@ -128,11 +128,11 @@ class SalesReturnInvoicesController extends Controller
     {
         $com_code = auth()->user()->com_code;
         if ($request->ajax()) {
-            $item_card_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "price", "nos_gomla_price", "gomla_price", "price_retail", "nos_gomla_price_retail", "gomla_price_retail", "does_has_retailunit", "retail_uom_id"), array("com_code" => $com_code, "item_code" => $request->item_code));
+            $item_card_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "price", "nos_gomla_price", "gomla_price", "price_retail", "nos_gomla_price_retail", "gomla_price_retail", "does_has_retailunit", "retail_uom_id"), array("com_code" => $com_code, "item_code" => $request->item_code));
             if (!empty($item_card_Data)) {
                 $uom_id = $request->uom_id;
                 $sales_item_type = $request->sales_item_type;
-                $uom_Data = get_cols_where_row(new Inv_uom(), array("is_master"), array("com_code" => $com_code, "id" => $uom_id));
+                $uom_Data = HelperClass::get_cols_where_row(new Inv_uom(), array("is_master"), array("com_code" => $com_code, "id" => $uom_id));
                 if (!empty($uom_Data)) {
                     if ($uom_Data['is_master'] == 1) {
                         if ($item_card_Data['uom_id'] == $uom_id) {
@@ -186,7 +186,7 @@ class SalesReturnInvoicesController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             //حنعمل اضافة للفاتورة اول مرة
-            $last_auto_serial_Date = get_cols_where_row_orderby(new SalesReturn(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
+            $last_auto_serial_Date = HelperClass::get_cols_where_row_orderby(new SalesReturn(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($last_auto_serial_Date)) {
                 $data_insert['auto_serial'] = $last_auto_serial_Date['auto_serial'] + 1;
             } else {
@@ -205,7 +205,7 @@ class SalesReturnInvoicesController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            $flag = insert(new SalesReturn(), $data_insert, false);
+            $flag = HelperClass::insert(new SalesReturn(), $data_insert, false);
             if ($flag) {
                 echo  json_encode($data_insert['auto_serial']);
             }
@@ -215,18 +215,18 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
-            $stores = get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code, "active" => 1), 'id', 'ASC');
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
-            $delegates = get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "active" => 1));
-            $customers = get_cols_where(new Customer(), array("customer_code", "name"), array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
-            $Sales_matrial_types = get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
-            $sales_invoices_details = get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $request->auto_serial));
+            $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+            $stores = HelperClass::get_cols_where(new Store(), array("id", "name"), array("com_code" => $com_code, "active" => 1), 'id', 'ASC');
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $delegates = HelperClass::get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "active" => 1));
+            $customers = HelperClass::get_cols_where(new Customer(), array("customer_code", "name"), array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+            $Sales_matrial_types = HelperClass::get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "active" => 1));
+            $sales_invoices_details = HelperClass::get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $request->auto_serial));
             if (!empty($sales_invoices_details)) {
                 foreach ($sales_invoices_details  as $info) {
-                    $info->store_name = get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
-                    $info->item_name = get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
+                    $info->store_name = HelperClass::get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
+                    $info->item_name = HelperClass::get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
                 }
             }
             return view("admin.sales_return_invoices.load_invoice_update_modal", ['stores' => $stores, 'user_shift' =>
@@ -238,12 +238,12 @@ class SalesReturnInvoicesController extends Controller
         try {
             if ($request->ajax()) {
                 $com_code = auth()->user()->com_code;
-                $invoice_data = get_cols_where_row(new SalesReturn(), array("is_approved", "invoice_date", "is_has_customer", "customer_code", "id"), array("com_code" => $com_code, "auto_serial" => $request->invoiceautoserial));
+                $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("is_approved", "invoice_date", "is_has_customer", "customer_code", "id"), array("com_code" => $com_code, "auto_serial" => $request->invoiceautoserial));
                 if (!empty($invoice_data)) {
                     if ($invoice_data['is_approved'] == 0) {
-                        $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $request->item_code));
+                        $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $request->item_code));
                         if (!empty($itemCard_Data)) {
-                            $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                            $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                             $datainsert_items['sales_invoices_auto_serial'] = $request->invoiceautoserial;
                             $datainsert_items['sales_invoices_return_id'] = $invoice_data['id'];
                             $datainsert_items['store_id'] = $request->store_id;
@@ -265,11 +265,11 @@ class SalesReturnInvoicesController extends Controller
                             $datainsert_items['created_at'] = date("Y-m-d H:i:s");
                             $datainsert_items['date'] = date("Y-m-d");
                             $datainsert_items['com_code'] = $com_code;
-                            $flag_datainsert_items = insert(new SalesReturnDetails(), $datainsert_items, true);
+                            $flag_datainsert_items = HelperClass::insert(new SalesReturnDetails(), $datainsert_items, true);
                             if (!empty($flag_datainsert_items)) {
                                 //رد الكمية الي الباتش
                                 //كمية الصنف بكل المخازن قبل الحركة
-                                $quantityBeforMove = get_sum_where(
+                                $quantityBeforMove = HelperClass::get_sum_where(
                                     new Inv_itemcard_batches(),
                                     "quantity",
                                     array(
@@ -278,7 +278,7 @@ class SalesReturnInvoicesController extends Controller
                                     )
                                 );
                                 //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-                                $quantityBeforMoveCurrntStore = get_sum_where(
+                                $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                                     new Inv_itemcard_batches(),
                                     "quantity",
                                     array(
@@ -291,7 +291,7 @@ class SalesReturnInvoicesController extends Controller
                                 //حنشوف لو في باتش موجوده مطابقة لمواصافات سعر الصنف
                                 if ($datainsert_items['batch_auto_serial'] == "") {
                                     if ($datainsert_items['sales_item_type'] == 2) {
-                                        $batch_data = get_cols_where_row(
+                                        $batch_data = HelperClass::get_cols_where_row(
                                             new Inv_itemcard_batches(),
                                             array("quantity", "unit_cost_price", "id"),
                                             array(
@@ -302,7 +302,7 @@ class SalesReturnInvoicesController extends Controller
                                             )
                                         );
                                     } else {
-                                        $batch_data = get_cols_where_row(
+                                        $batch_data = HelperClass::get_cols_where_row(
                                             new Inv_itemcard_batches(),
                                             array("quantity", "unit_cost_price", "id"),
                                             array(
@@ -332,21 +332,21 @@ class SalesReturnInvoicesController extends Controller
                                         $dataInsertBatch["created_at"] = date("Y-m-d H:i:s");
                                         $dataInsertBatch["added_by"] = auth()->user()->id;
                                         $dataInsertBatch["com_code"] = $com_code;
-                                        $row = get_cols_where_row_orderby(new Inv_itemcard_batches(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
+                                        $row = HelperClass::get_cols_where_row_orderby(new Inv_itemcard_batches(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
                                         if (!empty($row)) {
                                             $dataInsertBatch['auto_serial'] = $row['auto_serial'] + 1;
                                         } else {
                                             $dataInsertBatch['auto_serial'] = 1;
                                         }
-                                        $flag = insert(new Inv_itemcard_batches(), $dataInsertBatch);
+                                        $flag = HelperClass::insert(new Inv_itemcard_batches(), $dataInsertBatch);
                                         if ($flag) {
                                             $dataToupdateParentDetails['batch_auto_serial'] = $dataInsertBatch['auto_serial'];
-                                            update(new SalesReturnDetails(), $dataToupdateParentDetails, $datainsert_items);
+                                            HelperClass::update(new SalesReturnDetails(), $dataToupdateParentDetails, $datainsert_items);
                                         }
                                     }
                                     //end
                                 } else {
-                                    $batch_data = get_cols_where_row(
+                                    $batch_data = HelperClass::get_cols_where_row(
                                         new Inv_itemcard_batches(),
                                         array("quantity", "unit_cost_price", "id"),
                                         array(
@@ -366,11 +366,11 @@ class SalesReturnInvoicesController extends Controller
                                         $dataUpdateOldBatch['total_cost_price'] = $batch_data['unit_cost_price'] * $dataUpdateOldBatch['quantity'];
                                         $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                                         $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
-                                        $flag = update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
+                                        $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
                                     }
                                 }
                                 if ($flag) {
-                                    $quantityAfterMove = get_sum_where(
+                                    $quantityAfterMove = HelperClass::get_sum_where(
                                         new Inv_itemcard_batches(),
                                         "quantity",
                                         array(
@@ -379,7 +379,7 @@ class SalesReturnInvoicesController extends Controller
                                         )
                                     );
                                     //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي بعد الحركة
-                                    $quantityAfterMoveCurrentStore = get_sum_where(
+                                    $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                                         new Inv_itemcard_batches(),
                                         "quantity",
                                         array("item_code" => $request->item_code, "com_code" => $com_code, 'store_id' => $request->store_id)
@@ -393,7 +393,7 @@ class SalesReturnInvoicesController extends Controller
                                     //كود صف الابن بتفاصيل الفاتورة
                                     $dataInsert_inv_itemcard_movements['FK_table_details'] = $flag_datainsert_items['id'];
                                     if ($invoice_data['is_has_customer'] == 1) {
-                                        $customerName = get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+                                        $customerName = HelperClass::get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
                                     } else {
                                         $customerName = " طياري لايوجد";
                                     }
@@ -411,10 +411,10 @@ class SalesReturnInvoicesController extends Controller
                                     $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                                     $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                                     $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                                    $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                                    $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                                     if ($flag) {
                                         //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                                        do_update_itemCardQuantity(
+                                        HelperClass::do_update_itemCardQuantity(
                                             new Inv_itemCard(),
                                             $request->item_code,
                                             new Inv_itemcard_batches(),
@@ -437,12 +437,12 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $sales_invoices_details = get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $request->auto_serial));
+            $sales_invoices_details = HelperClass::get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $request->auto_serial));
             if (!empty($sales_invoices_details)) {
                 foreach ($sales_invoices_details  as $info) {
-                    $info->store_name = get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
-                    $info->item_name = get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
+                    $info->store_name = HelperClass::get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
+                    $info->item_name = HelperClass::get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
                 }
             }
             return view("admin.sales_return_invoices.reload_items_in_invoice", ['sales_invoices_details' => $sales_invoices_details]);
@@ -452,7 +452,7 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+            $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
             if (!empty($invoice_data)) {
                 if ($invoice_data['is_approved'] == 0) {
                     $dataUpdateParent['invoice_date'] = $request->invoice_date;
@@ -476,7 +476,7 @@ class SalesReturnInvoicesController extends Controller
                     $dataUpdateParent['notes'] = $request->notes;
                     $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
                     $dataUpdateParent['updated_by'] = auth()->user()->com_code;
-                    update(new SalesReturn(), $dataUpdateParent, array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+                    HelperClass::update(new SalesReturn(), $dataUpdateParent, array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
                     echo json_encode("done");
                 }
             }
@@ -486,16 +486,16 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new SalesReturn(), array("is_approved", "is_has_customer", "customer_code"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+            $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("is_approved", "is_has_customer", "customer_code"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
             if (!empty($invoice_data)) {
                 if ($invoice_data['is_approved'] == 0) {
-                    $sales_invoices_details_data = get_cols_where_row(new SalesReturnDetails(), array("batch_auto_serial", "quantity", "item_code", "store_id", "isparentuom"), array("com_code" => $com_code, "id" => $request->id));
+                    $sales_invoices_details_data = HelperClass::get_cols_where_row(new SalesReturnDetails(), array("batch_auto_serial", "quantity", "item_code", "store_id", "isparentuom"), array("com_code" => $com_code, "id" => $request->id));
                     if (!empty($sales_invoices_details_data)) {
-                        $batch_data = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id"), array("com_code" => $com_code, "auto_serial" => $sales_invoices_details_data['batch_auto_serial']));
+                        $batch_data = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "unit_cost_price", "id"), array("com_code" => $com_code, "auto_serial" => $sales_invoices_details_data['batch_auto_serial']));
                         if (!empty($batch_data)) {
-                            $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $sales_invoices_details_data['item_code']));
+                            $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $sales_invoices_details_data['item_code']));
                             if (!empty($itemCard_Data)) {
-                                $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                                $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                                 if ($sales_invoices_details_data['isparentuom'] == 1) {
                                     //حنرد بشكل مباشر لانه بنفس وحده الباتش الاب
                                     $item_quantityByParentUom = $sales_invoices_details_data['quantity'];
@@ -504,11 +504,11 @@ class SalesReturnInvoicesController extends Controller
                                     $item_quantityByParentUom = $sales_invoices_details_data['quantity'] / $itemCard_Data['retail_uom_quntToParent'];
                                 }
                                 //حذف السطر من تفاصيل الفاتورة
-                                $flag = delete(new SalesReturnDetails(), array("com_code" => $com_code, "id" => $request->id));
+                                $flag = HelperClass::delete(new SalesReturnDetails(), array("com_code" => $com_code, "id" => $request->id));
                                 if ($flag) {
                                     //رد الكمية الي الباتش
                                     //كمية الصنف بكل المخازن قبل الحركة
-                                    $quantityBeforMove = get_sum_where(
+                                    $quantityBeforMove = HelperClass::get_sum_where(
                                         new Inv_itemcard_batches(),
                                         "quantity",
                                         array(
@@ -517,7 +517,7 @@ class SalesReturnInvoicesController extends Controller
                                         )
                                     );
                                     //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي قبل الحركة
-                                    $quantityBeforMoveCurrntStore = get_sum_where(
+                                    $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(
                                         new Inv_itemcard_batches(),
                                         "quantity",
                                         array(
@@ -531,9 +531,9 @@ class SalesReturnInvoicesController extends Controller
                                     $dataUpdateOldBatch['total_cost_price'] = $batch_data['unit_cost_price'] * $dataUpdateOldBatch['quantity'];
                                     $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                                     $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
-                                    $flag = update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
+                                    $flag = HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $batch_data['id'], "com_code" => $com_code));
                                     if ($flag) {
-                                        $quantityAfterMove = get_sum_where(
+                                        $quantityAfterMove = HelperClass::get_sum_where(
                                             new Inv_itemcard_batches(),
                                             "quantity",
                                             array(
@@ -542,7 +542,7 @@ class SalesReturnInvoicesController extends Controller
                                             )
                                         );
                                         //get Quantity Befor any Action  حنجيب كيمة الصنف  بالمخزن المحدد معه   الحالي بعد الحركة
-                                        $quantityAfterMoveCurrentStore = get_sum_where(
+                                        $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(
                                             new Inv_itemcard_batches(),
                                             "quantity",
                                             array("item_code" => $sales_invoices_details_data['item_code'], "com_code" => $com_code, 'store_id' => $sales_invoices_details_data['store_id'])
@@ -556,7 +556,7 @@ class SalesReturnInvoicesController extends Controller
                                         //كود صف الابن بتفاصيل الفاتورة
                                         $dataInsert_inv_itemcard_movements['FK_table_details'] = $request->id;
                                         if ($invoice_data['is_has_customer'] == 1) {
-                                            $customerName = get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+                                            $customerName = HelperClass::get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
                                         } else {
                                             $customerName = " طياري لايوجد";
                                         }
@@ -574,10 +574,10 @@ class SalesReturnInvoicesController extends Controller
                                         $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                                         $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                                         $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                                        $flag = insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                                        $flag = HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                                         if ($flag) {
                                             //update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                                            do_update_itemCardQuantity(
+                                            HelperClass::do_update_itemCardQuantity(
                                                 new Inv_itemCard(),
                                                 $sales_invoices_details_data['item_code'],
                                                 new Inv_itemcard_batches(),
@@ -600,7 +600,7 @@ class SalesReturnInvoicesController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
         }
         return view("admin.sales_return_invoices.load_usershiftDiv", ['user_shift' => $user_shift]);
     }
@@ -608,7 +608,7 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new SalesReturn(), array("is_approved", "pill_type", "total_cost", "customer_code", "is_has_customer"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+            $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("is_approved", "pill_type", "total_cost", "customer_code", "is_has_customer"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
             if (!empty($invoice_data)) {
                 if ($invoice_data['is_approved'] == 0) {
                     $dataUpdateParent['money_for_account'] = $invoice_data['total_cost'] * (-1);
@@ -619,15 +619,15 @@ class SalesReturnInvoicesController extends Controller
                     $dataUpdateParent['what_paid'] = $request->what_paid;
                     $dataUpdateParent['what_remain'] = $request->what_remain;
                     if ($invoice_data['is_has_customer'] == 1) {
-                        $customerData = get_cols_where_row(new Customer(), "account_number", array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+                        $customerData = HelperClass::get_cols_where_row(new Customer(), "account_number", array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
                         $dataUpdateParent['account_number'] = $customerData['account_number'];
                     }
-                    $flag = update(new SalesReturn(), $dataUpdateParent, array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+                    $flag = HelperClass::update(new SalesReturn(), $dataUpdateParent, array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
                     if ($flag) {
                         if ($request->what_paid > 0) {
-                            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
-                            $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
-                            $last_record_treasuries_transactions_record = get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
+                            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+                            $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                            $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
                             if (!empty($last_record_treasuries_transactions_record)) {
                                 $dataInsert_treasuries_transactions['auto_serial'] = $last_record_treasuries_transactions_record['auto_serial'] + 1;
                             } else {
@@ -652,16 +652,16 @@ class SalesReturnInvoicesController extends Controller
                             $dataInsert_treasuries_transactions['created_at'] = date("Y-m-Y H:i:s");
                             $dataInsert_treasuries_transactions['added_by'] = auth()->user()->id;
                             $dataInsert_treasuries_transactions['com_code'] = $com_code;
-                            $flag = insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
+                            $flag = HelperClass::insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
                             if ($flag) {
                                 //update Treasuries last_isal_exhcange
                                 $dataUpdateTreasuries['last_isal_exhcange'] = $dataInsert_treasuries_transactions['isal_number'];
-                                update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                                HelperClass::update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                             }
                         }
                         if ($invoice_data['is_has_customer'] == 1) {
                             //Affect on Customer Finanical Account Balance
-                            refresh_account_blance_customer($customerData["account_number"], new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), false);
+                            HelperClass::refresh_account_blance_customer($customerData["account_number"], new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), false);
                         }
                         echo json_encode("done");
                     }
@@ -673,11 +673,11 @@ class SalesReturnInvoicesController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $SalesInvoiceData = get_cols_where_row(new SalesReturn(), array("is_approved", "auto_serial"), array("id" => $id, "com_code" => $com_code));
+            $SalesInvoiceData = HelperClass::get_cols_where_row(new SalesReturn(), array("is_approved", "auto_serial"), array("id" => $id, "com_code" => $com_code));
             if (!empty($SalesInvoiceData)) {
-                $flag = delete(new SalesReturn(), array("id" => $id, "com_code" => $com_code));
+                $flag = HelperClass::delete(new SalesReturn(), array("id" => $id, "com_code" => $com_code));
                 if ($flag) {
-                    delete(new SalesReturnDetails(), array("sales_invoices_auto_serial" => $SalesInvoiceData['auto_serial'], "com_code" => $com_code));
+                    HelperClass::delete(new SalesReturnDetails(), array("sales_invoices_auto_serial" => $SalesInvoiceData['auto_serial'], "com_code" => $com_code));
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);
                 } else {
@@ -697,18 +697,18 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
-            $delegates = get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "delegate_code" => $invoice_data['delegate_code']));
+            $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "auto_serial" => $request->auto_serial));
+            $delegates = HelperClass::get_cols_where(new Delegate(), array("delegate_code", "name"), array("com_code" => $com_code, "delegate_code" => $invoice_data['delegate_code']));
             if ($invoice_data['is_has_customer'] == 1) {
-                $customers = get_cols_where(new Customer(), array("customer_code", "name"), array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+                $customers = HelperClass::get_cols_where(new Customer(), array("customer_code", "name"), array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
             }
-            $Sales_matrial_types = get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "id" => $invoice_data['sales_matrial_types']));
-            $sales_invoices_details = get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $request->auto_serial));
+            $Sales_matrial_types = HelperClass::get_cols_where(new Sales_matrial_types(), array("id", "name"), array("com_code" => $com_code, "id" => $invoice_data['sales_matrial_types']));
+            $sales_invoices_details = HelperClass::get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $request->auto_serial));
             if (!empty($sales_invoices_details)) {
                 foreach ($sales_invoices_details  as $info) {
-                    $info->store_name = get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
-                    $info->item_name = get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
+                    $info->store_name = HelperClass::get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
+                    $info->item_name = HelperClass::get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
                 }
             }
             return view("admin.sales_return_invoices.load_invoice_details_modal", ['delegates' => $delegates, 'customers' => $customers, 'Sales_matrial_types' => $Sales_matrial_types, 'invoice_data' => $invoice_data, 'sales_invoices_details' => $sales_invoices_details]);
@@ -842,9 +842,9 @@ class SalesReturnInvoicesController extends Controller
             if (!empty($data)) {
                 foreach ($data as $info) {
                     $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
-                    $info->Sales_matrial_types_name = get_field_value(new Sales_matrial_types(), "name", array("com_code" => $com_code, "id" => $info->sales_matrial_types));
+                    $info->Sales_matrial_types_name = HelperClass::get_field_value(new Sales_matrial_types(), "name", array("com_code" => $com_code, "id" => $info->sales_matrial_types));
                     if ($info->is_has_customer == 1) {
-                        $info->customer_name = get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $info->customer_code));
+                        $info->customer_name = HelperClass::get_field_value(new Customer(), "name", array("com_code" => $com_code, "customer_code" => $info->customer_code));
                     } else {
                         $info->customer_name = "بدون عميل";
                     }
@@ -858,7 +858,7 @@ class SalesReturnInvoicesController extends Controller
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
             //check if not exsits for name
-            $checkExists_name = get_cols_where_row(
+            $checkExists_name = HelperClass::get_cols_where_row(
                 new Customer(),
                 array("id"),
                 array(
@@ -868,7 +868,7 @@ class SalesReturnInvoicesController extends Controller
             );
             if (empty($checkExists_name)) {
                 //set customer code
-                $row = get_cols_where_row_orderby(
+                $row = HelperClass::get_cols_where_row_orderby(
                     new Customer(),
                     array("customer_code"),
                     array("com_code" => $com_code),
@@ -881,7 +881,7 @@ class SalesReturnInvoicesController extends Controller
                     $data_insert['customer_code'] = 1;
                 }
                 //set account number
-                $row = get_cols_where_row_orderby(
+                $row = HelperClass::get_cols_where_row_orderby(
                     new Account(),
                     array("account_number"),
                     array("com_code" => $com_code),
@@ -920,7 +920,7 @@ class SalesReturnInvoicesController extends Controller
                 $data_insert['created_at'] = date("Y-m-d H:i:s");
                 $data_insert['date'] = date("Y-m-d");
                 $data_insert['com_code'] = $com_code;
-                $flag = insert(new Customer(), $data_insert);
+                $flag = HelperClass::insert(new Customer(), $data_insert);
                 if ($flag) {
                     //insert into accounts
                     $data_insert_account['name'] = $request->name;
@@ -942,7 +942,7 @@ class SalesReturnInvoicesController extends Controller
                         $data_insert_account['start_balance'] = 0;
                     }
                     $data_insert_account['current_balance'] = $data_insert_account['start_balance'];
-                    $customer_parent_account_number = get_field_value(
+                    $customer_parent_account_number = HelperClass::get_field_value(
                         new Admin_panel_setting(),
                         "customer_parent_account_number",
                         array('com_code' => $com_code)
@@ -958,7 +958,7 @@ class SalesReturnInvoicesController extends Controller
                     $data_insert_account['date'] = date("Y-m-d");
                     $data_insert_account['com_code'] = $com_code;
                     $data_insert_account['other_table_FK'] = $data_insert['customer_code'];
-                    $flag = insert(new Account(), $data_insert_account);
+                    $flag = HelperClass::insert(new Account(), $data_insert_account);
                     if ($flag) {
                         echo json_encode("done");
                     }
@@ -972,7 +972,7 @@ class SalesReturnInvoicesController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $customers = get_cols_where_limit(new Customer(), array("customer_code", "name"), array("com_code" => $com_code), 'id', 'DESC', 1);
+            $customers = HelperClass::get_cols_where_limit(new Customer(), array("customer_code", "name"), array("com_code" => $com_code), 'id', 'DESC', 1);
             return view('admin.sales_return_invoices.get_last_added_customer', ['customers' => $customers]);
         }
     }
@@ -1006,19 +1006,19 @@ class SalesReturnInvoicesController extends Controller
     public function printsaleswina4($id, $size)
     {
         $com_code = auth()->user()->com_code;
-        $invoice_data = get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "id" => $id));
+        $invoice_data = HelperClass::get_cols_where_row(new SalesReturn(), array("*"), array("com_code" => $com_code, "id" => $id));
         if (empty($invoice_data)) {
             return redirect()->back()->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة']);
         }
-        $invoice_data['customer_name'] = get_field_value(new Customer(), 'name', array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
-        $invoice_data['customer_phones'] = get_field_value(new Customer(), 'phones', array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
-        $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
-        $sales_invoices_details = get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $invoice_data['auto_serial']));
+        $invoice_data['customer_name'] = HelperClass::get_field_value(new Customer(), 'name', array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+        $invoice_data['customer_phones'] = HelperClass::get_field_value(new Customer(), 'phones', array("com_code" => $com_code, "customer_code" => $invoice_data['customer_code']));
+        $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+        $sales_invoices_details = HelperClass::get_cols_where(new SalesReturnDetails(), array("*"), array("com_code" => $com_code, "sales_invoices_auto_serial" => $invoice_data['auto_serial']));
         if (!empty($sales_invoices_details)) {
             foreach ($sales_invoices_details  as $info) {
-                $info->store_name = get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
-                $info->item_name = get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
-                $info->uom_name = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
+                $info->store_name = HelperClass::get_field_value(new Store(), "name", array("com_code" => $com_code, "id" => $info->store_id));
+                $info->item_name = HelperClass::get_field_value(new Inv_itemCard(), "name", array("com_code" => $com_code, "item_code" => $info->item_code));
+                $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $info->uom_id));
             }
         }
         if ($size == "A4") {

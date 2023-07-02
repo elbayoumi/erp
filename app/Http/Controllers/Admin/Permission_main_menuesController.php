@@ -8,6 +8,7 @@ use App\Models\{
     Admin,
     Permission_sub_menues,
 };
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Http\Requests\Permission_main_menuesRequst;
 
@@ -100,7 +101,7 @@ class Permission_main_menuesController extends Controller
             if (!empty($item_row)) {
                 $flag = $item_row->delete();
                 if ($flag) {
-                    delete(new Permission_sub_menues(), array("com_code" => $com_code, 'permission_main_menues_id' => $id));
+                    HelperClass::delete(new Permission_sub_menues(), array("com_code" => $com_code, 'permission_main_menues_id' => $id));
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);
                 } else {

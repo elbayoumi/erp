@@ -15,12 +15,15 @@ use App\Http\Requests\{
     AccountsRequestUpdate,
 };
 
+use Helpers\HelperClass;
+
 class AccountsController extends Controller
 {
     public function index()
     {
+
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new Account(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new Account(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -36,14 +39,14 @@ class AccountsController extends Controller
                 }
             }
         }
-        $account_types = get_cols_where(new Account_types(), array("id", "name"), array("active" => 1), 'id', 'ASC');
+        $account_types = HelperClass::get_cols_where(new Account_types(), array("id", "name"), array("active" => 1), 'id', 'ASC');
         return view('admin.accounts.index', ['data' => $data, 'account_types' => $account_types]);
     }
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $account_types = get_cols_where(new Account_types(), array("id", "name"), array("active" => 1, "relatediternalaccounts" => 0), 'id', 'ASC');
-        $parent_accounts = get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => $com_code), 'id', 'ASC');
+        $account_types = HelperClass::get_cols_where(new Account_types(), array("id", "name"), array("active" => 1, "relatediternalaccounts" => 0), 'id', 'ASC');
+        $parent_accounts = HelperClass::get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => $com_code), 'id', 'ASC');
         return view('admin.accounts.create', ['account_types' => $account_types, 'parent_accounts' => $parent_accounts]);
     }
     public function store(AccountsRequest $request)
@@ -51,14 +54,14 @@ class AccountsController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             //check if not exsits for name
-            $checkExists_name = get_cols_where_row(new Account(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
+            $checkExists_name = HelperClass::get_cols_where_row(new Account(), array("id"), array('name' => $request->name, 'com_code' => $com_code));
             if (!empty($checkExists_name)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا اسم الحساب مسجل من قبل'])
                     ->withInput();
             }
             //set account number
-            $row = get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
+            $row = HelperClass::get_cols_where_row_orderby(new Account(), array("account_number"), array("com_code" => $com_code), 'id', 'DESC');
             if (!empty($row)) {
                 $data_insert['account_number'] = $row['account_number'] + 1;
             } else {
@@ -105,7 +108,7 @@ class AccountsController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new Account(), array("*"), array("id" => $id, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new Account(), array("*"), array("id" => $id, "com_code" => $com_code));
         if (empty($data)) {
             return redirect()->route('accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
         }
@@ -113,15 +116,15 @@ class AccountsController extends Controller
         if ($relatediternalaccounts == 1) {
             return redirect()->route('accounts.index')->with(['error' => 'عفوا لايمكن تحديث هذا الحساب الي من شاشته الخاصه حسب نوعه']);
         }
-        $account_types = get_cols_where(new Account_types(), array("id", "name"), array("active" => 1), 'id', 'ASC');
-        $parent_accounts = get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => $com_code), 'id', 'ASC');
+        $account_types = HelperClass::get_cols_where(new Account_types(), array("id", "name"), array("active" => 1), 'id', 'ASC');
+        $parent_accounts = HelperClass::get_cols_where(new Account(), array("account_number", "name"), array("is_parent" => 1, "com_code" => $com_code), 'id', 'ASC');
         return view('admin.accounts.edit', ['account_types' => $account_types, 'parent_accounts' => $parent_accounts, 'data' => $data]);
     }
     public function update($id, AccountsRequestUpdate $request)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new Account(), array("id", "account_number", "other_table_FK", "account_type"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new Account(), array("id", "account_number", "other_table_FK", "account_type"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('accounts.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -144,7 +147,7 @@ class AccountsController extends Controller
             $data_to_update['active'] = $request->active;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            $flag =  update(new Account(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
+            $flag =  HelperClass::update(new Account(), $data_to_update, array('id' => $id, 'com_code' => $com_code));
             return redirect()->route('accounts.index')->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -156,9 +159,9 @@ class AccountsController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $item_row = get_cols_where_row(new Account(), array("name"), array("id" => $id, "com_code" => $com_code));
+            $item_row = HelperClass::get_cols_where_row(new Account(), array("name"), array("id" => $id, "com_code" => $com_code));
             if (!empty($item_row)) {
-                $flag = delete(new Account(), ["id" => $id, "com_code" => $com_code]);
+                $flag = HelperClass::delete(new Account(), ["id" => $id, "com_code" => $com_code]);
                 if ($flag) {
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);

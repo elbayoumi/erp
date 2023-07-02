@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 use App\Models\{
     Admin,
@@ -29,7 +30,7 @@ class Services_with_ordersController extends Controller
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new services_with_orders(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new services_with_orders(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -41,13 +42,13 @@ class Services_with_ordersController extends Controller
                 }
             }
         }
-        $accounts = get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code, 'is_parent' => 0), 'id', 'DESC');
+        $accounts = HelperClass::get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code, 'is_parent' => 0), 'id', 'DESC');
         return view('admin.services_with_orders.index', ['data' => $data, 'accounts' => $accounts]);
     }
     public function create()
     {
         $com_code = auth()->user()->com_code;
-        $accounts = get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code, 'is_parent' => 0), 'id', 'DESC');
+        $accounts = HelperClass::get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code, 'is_parent' => 0), 'id', 'DESC');
         return view('admin.services_with_orders.create', ['accounts' => $accounts]);
     }
     public function store(Services_orders_request $request)
@@ -55,7 +56,7 @@ class Services_with_ordersController extends Controller
         try {
             $com_code = auth()->user()->com_code;
             if ($request->is_account_number == 1) {
-                $AccountData = get_cols_where_row(new Account(), array("id"), array("account_number" => $request->account_number, "com_code" => $com_code));
+                $AccountData = HelperClass::get_cols_where_row(new Account(), array("id"), array("account_number" => $request->account_number, "com_code" => $com_code));
                 if (empty($AccountData)) {
                     return redirect()->back()
                         ->with(['error' => 'عفوا   غير قادر علي الوصول الي بيانات الحساب المحدد'])
@@ -63,9 +64,9 @@ class Services_with_ordersController extends Controller
                 }
             }
             if ($request->order_type == 1) {
-                $row = get_cols_where_row_orderby(new services_with_orders(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC');
+                $row = HelperClass::get_cols_where_row_orderby(new services_with_orders(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 1), 'id', 'DESC');
             } else {
-                $row = get_cols_where_row_orderby(new services_with_orders(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 2), 'id', 'DESC');
+                $row = HelperClass::get_cols_where_row_orderby(new services_with_orders(), array("auto_serial"), array("com_code" => $com_code, 'order_type' => 2), 'id', 'DESC');
             }
             if (!empty($row)) {
                 $data_insert['auto_serial'] = $row['auto_serial'] + 1;
@@ -86,8 +87,8 @@ class Services_with_ordersController extends Controller
             $data_insert['created_at'] = date("Y-m-d H:i:s");
             $data_insert['date'] = date("Y-m-d");
             $data_insert['com_code'] = $com_code;
-            insert(new services_with_orders(), $data_insert);
-            $id = get_field_value(new services_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => $request->order_type));
+            HelperClass::insert(new services_with_orders(), $data_insert);
+            $id = HelperClass::get_field_value(new services_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => $request->order_type));
             return redirect()->route("admin.Services_orders.index")->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -101,7 +102,7 @@ class Services_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -114,7 +115,7 @@ class Services_with_ordersController extends Controller
             }
 
 
-            $details = get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
+            $details = HelperClass::get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($details)) {
                 foreach ($details as $info) {
                     $info->service_name = Services::where('id', $info->service_id)->value('name');
@@ -135,10 +136,10 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new services_with_orders(), array("is_approved", "order_type"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new services_with_orders(), array("is_approved", "order_type"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
-                    $services = get_cols_where(new Services(), array("name", "id"), array('active' => 1, 'com_code' => $com_code, 'type' => $parent_pill_data['order_type']), 'id', 'DESC');
+                    $services = HelperClass::get_cols_where(new Services(), array("name", "id"), array('active' => 1, 'com_code' => $com_code, 'type' => $parent_pill_data['order_type']), 'id', 'DESC');
                     return view("admin.services_with_orders.load_add_new_itemdetails", ['parent_pill_data' => $parent_pill_data, 'services' => $services]);
                 }
             }
@@ -149,7 +150,7 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new services_with_orders(), array("is_approved", "order_date", "tax_value", "discount_value", 'order_type', 'auto_serial', "id"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new services_with_orders(), array("is_approved", "order_date", "tax_value", "discount_value", 'order_type', 'auto_serial', "id"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
                     $data_insert['services_with_orders_auto_serial'] = $parent_pill_data['auto_serial'];
@@ -163,16 +164,16 @@ class Services_with_ordersController extends Controller
                     $data_insert['created_at'] = date("Y-m-d H:i:s");
                     $data_insert['date'] = date("Y-m-d");
                     $data_insert['com_code'] = $com_code;
-                    $flag = insert(new services_with_orders_details(), $data_insert);
+                    $flag = HelperClass::insert(new services_with_orders_details(), $data_insert);
                     if ($flag) {
                         /** update parent pill */
-                        $total_detials_sum = get_sum_where(new services_with_orders_details(), 'total', array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => $parent_pill_data['order_type'], 'com_code' => $com_code));
+                        $total_detials_sum = HelperClass::get_sum_where(new services_with_orders_details(), 'total', array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => $parent_pill_data['order_type'], 'com_code' => $com_code));
                         $dataUpdateParent['total_services'] = $total_detials_sum;
                         $dataUpdateParent['total_befor_discount'] = $total_detials_sum + $parent_pill_data['tax_value'];
                         $dataUpdateParent['total_cost'] = $dataUpdateParent['total_befor_discount'] - $parent_pill_data['discount_value'];
                         $dataUpdateParent['updated_by'] = auth()->user()->id;
                         $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
-                        update(new services_with_orders(), $dataUpdateParent, array("com_code" => $com_code, "id" => $request->id_parent_pill));
+                        HelperClass::update(new services_with_orders(), $dataUpdateParent, array("com_code" => $com_code, "id" => $request->id_parent_pill));
                         echo json_encode("done");
                     }
                 }
@@ -184,7 +185,7 @@ class Services_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new services_with_orders(), array("is_approved", "auto_serial", 'order_type'), array("id" => $id, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new services_with_orders(), array("is_approved", "auto_serial", 'order_type'), array("id" => $id, "com_code" => $com_code));
             if (empty($parent_pill_data)) {
                 return redirect()->back()
                     ->with(['error' => 'عفوا حدث خطأ ما']);
@@ -195,9 +196,9 @@ class Services_with_ordersController extends Controller
                         ->with(['error' => 'عفوا  لايمكن الحذف بتفاصيل فاتورة معتمده ومؤرشفة']);
                 }
             }
-            $flag = delete(new services_with_orders(), array("id" => $id, "com_code" => $com_code));
+            $flag = HelperClass::delete(new services_with_orders(), array("id" => $id, "com_code" => $com_code));
             if ($flag) {
-                delete(new services_with_orders_details(), array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => $parent_pill_data['order_type']));
+                HelperClass::delete(new services_with_orders_details(), array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => $parent_pill_data['order_type']));
                 return redirect()->route('Services_orders.index')->with(['success' => 'لقد تم حذف  البيانات بنجاح']);
             }
         } catch (\Exception $ex) {
@@ -210,7 +211,7 @@ class Services_with_ordersController extends Controller
     public function edit($id)
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
         if (empty($data)) {
             return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
         }
@@ -218,8 +219,8 @@ class Services_with_ordersController extends Controller
             return redirect()->route('Services_orders.index')->with(['error' => 'عفوا لايمكن التحديث علي فاتورة معتمدة ومؤرشفة']);
         }
 
-        $accounts = get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code, 'is_parent' => 0), 'id', 'DESC');
-        $Services_Added_Counter = get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
+        $accounts = HelperClass::get_cols_where(new Account(), array('account_number', 'name'), array('com_code' => $com_code, 'is_parent' => 0), 'id', 'DESC');
+        $Services_Added_Counter = HelperClass::get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
 
         return view('admin.services_with_orders.edit', ['data' => $data, 'accounts' => $accounts, 'Services_Added_Counter' => $Services_Added_Counter]);
     }
@@ -229,7 +230,7 @@ class Services_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -238,7 +239,7 @@ class Services_with_ordersController extends Controller
             }
 
             if ($request->is_account_number == 1) {
-                $accountData = get_cols_where_row(new Account(), array("account_number"), array("account_number" => $request->account_number, "com_code" => $com_code));
+                $accountData = HelperClass::get_cols_where_row(new Account(), array("account_number"), array("account_number" => $request->account_number, "com_code" => $com_code));
                 if (empty($accountData)) {
                     return redirect()->back()
                         ->with(['error' => 'عفوا   غير قادر علي الوصول الي بيانات الحساب المالي المحدد'])
@@ -249,7 +250,7 @@ class Services_with_ordersController extends Controller
             $data_to_update['order_date'] = $request->order_date;
             $data_to_update['is_account_number'] = $request->is_account_number;
 
-            $Services_Added_Counter = get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
+            $Services_Added_Counter = HelperClass::get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
             if ($Services_Added_Counter == 0) {
                 $data_to_update['order_type'] = $request->order_type;
             }
@@ -265,7 +266,7 @@ class Services_with_ordersController extends Controller
             $data_to_update['pill_type'] = $request->pill_type;
             $data_to_update['updated_by'] = auth()->user()->id;
             $data_to_update['updated_at'] = date("Y-m-d H:i:s");
-            update(new services_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code));
+            HelperClass::update(new services_with_orders(), $data_to_update, array("id" => $id, "com_code" => $com_code));
             return redirect()->route('Services_orders.show', $id)->with(['success' => 'لقد تم تحديث البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
@@ -279,7 +280,7 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id, "com_code" => $com_code));
             if (!empty($data)) {
                 $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                 if ($data['is_account_number'] == 1) {
@@ -298,9 +299,9 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id, "com_code" => $com_code));
             if (!empty($data)) {
-                $details = get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
+                $details = HelperClass::get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
                 if (!empty($details)) {
                     foreach ($details as $info) {
                         $info->service_name = Services::where('id', $info->service_id)->value('name');
@@ -318,7 +319,7 @@ class Services_with_ordersController extends Controller
     {
         try {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $parent_id, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $parent_id, "com_code" => $com_code));
             if (empty($parent_pill_data)) {
                 return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -331,13 +332,13 @@ class Services_with_ordersController extends Controller
                 if ($flag) {
 
                     /** update parent pill */
-                    $total_detials_sum = get_sum_where(new services_with_orders_details(), 'total', array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => $parent_pill_data['order_type'], 'com_code' => $com_code));
+                    $total_detials_sum = HelperClass::get_sum_where(new services_with_orders_details(), 'total', array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => $parent_pill_data['order_type'], 'com_code' => $com_code));
                     $dataUpdateParent['total_services'] = $total_detials_sum;
                     $dataUpdateParent['total_befor_discount'] = $total_detials_sum + $parent_pill_data['tax_value'];
                     $dataUpdateParent['total_cost'] = $dataUpdateParent['total_befor_discount'] - $parent_pill_data['discount_value'];
                     $dataUpdateParent['updated_by'] = auth()->user()->id;
                     $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
-                    update(new services_with_orders(), $dataUpdateParent, array("com_code" => $com_code, "id" => $parent_id));
+                    HelperClass::update(new services_with_orders(), $dataUpdateParent, array("com_code" => $com_code, "id" => $parent_id));
 
                     return redirect()->back()
                         ->with(['success' => '   تم حذف البيانات بنجاح']);
@@ -359,11 +360,11 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
-                    $item_data_detials = get_cols_where_row(new services_with_orders_details(), array("*"), array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => $parent_pill_data['order_type'], 'id' => $request->id));
-                    $services = get_cols_where(new Services(), array("name", "id"), array('active' => 1, 'com_code' => $com_code, 'type' => $parent_pill_data['order_type']), 'id', 'DESC');
+                    $item_data_detials = HelperClass::get_cols_where_row(new services_with_orders_details(), array("*"), array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], "com_code" => $com_code, 'order_type' => $parent_pill_data['order_type'], 'id' => $request->id));
+                    $services = HelperClass::get_cols_where(new Services(), array("name", "id"), array('active' => 1, 'com_code' => $com_code, 'type' => $parent_pill_data['order_type']), 'id', 'DESC');
                     return view("admin.services_with_orders.load_edit_item_details", ['parent_pill_data' => $parent_pill_data, 'item_data_detials' => $item_data_detials, 'services' => $services]);
                 }
             }
@@ -374,7 +375,7 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
+            $parent_pill_data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
             if (!empty($parent_pill_data)) {
                 if ($parent_pill_data['is_approved'] == 0) {
                     $data_to_update['service_id'] = $request->services_id;
@@ -384,18 +385,18 @@ class Services_with_ordersController extends Controller
                     $data_to_update['updated_at'] = date("Y-m-d H:i:s");
                     $data_to_update['com_code'] = $com_code;
 
-                    $flag = update(new services_with_orders_details(), $data_to_update, array("id" => $request->id, 'com_code' => $com_code, 'order_type' => $parent_pill_data['order_type'], 'services_with_orders_auto_serial' => $parent_pill_data['auto_serial']));
+                    $flag = HelperClass::update(new services_with_orders_details(), $data_to_update, array("id" => $request->id, 'com_code' => $com_code, 'order_type' => $parent_pill_data['order_type'], 'services_with_orders_auto_serial' => $parent_pill_data['auto_serial']));
                     if ($flag) {
                         /** update parent pill */
 
                         /** update parent pill */
-                        $total_detials_sum = get_sum_where(new services_with_orders_details(), 'total', array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => $parent_pill_data['order_type'], 'com_code' => $com_code));
+                        $total_detials_sum = HelperClass::get_sum_where(new services_with_orders_details(), 'total', array("services_with_orders_auto_serial" => $parent_pill_data['auto_serial'], 'order_type' => $parent_pill_data['order_type'], 'com_code' => $com_code));
                         $dataUpdateParent['total_services'] = $total_detials_sum;
                         $dataUpdateParent['total_befor_discount'] = $total_detials_sum + $parent_pill_data['tax_value'];
                         $dataUpdateParent['total_cost'] = $dataUpdateParent['total_befor_discount'] - $parent_pill_data['discount_value'];
                         $dataUpdateParent['updated_by'] = auth()->user()->id;
                         $dataUpdateParent['updated_at'] = date("Y-m-d H:i:s");
-                        update(new services_with_orders(), $dataUpdateParent, array("com_code" => $com_code, "id" => $request->id_parent_pill));
+                        HelperClass::update(new services_with_orders(), $dataUpdateParent, array("com_code" => $com_code, "id" => $request->id_parent_pill));
 
                         echo json_encode("done");
                     }
@@ -408,10 +409,10 @@ class Services_with_ordersController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $request->id_parent_pill, "com_code" => $com_code));
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
-            $counterDetails = get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $counterDetails = HelperClass::get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
 
 
 
@@ -424,7 +425,7 @@ class Services_with_ordersController extends Controller
             $com_code = auth()->user()->com_code;
             $parentordertype = $request->parentordertype;
             //current user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
         }
 
         return view("admin.services_with_orders.load_usershiftDiv", ['user_shift' => $user_shift, 'parentordertype' => $parentordertype]);
@@ -436,14 +437,14 @@ class Services_with_ordersController extends Controller
     {
         $com_code = auth()->user()->com_code;
         //check is not approved
-        $data = get_cols_where_row(new services_with_orders(), array("total_services", "is_approved", "id", "account_number", "auto_serial", "order_type", "is_account_number", "entity_name"), array("id" => $id, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new services_with_orders(), array("total_services", "is_approved", "id", "account_number", "auto_serial", "order_type", "is_account_number", "entity_name"), array("id" => $id, "com_code" => $com_code));
         if (empty($data)) {
             return redirect()->route("admin.Services_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
         if ($data['is_approved'] == 1) {
             return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
         }
-        $counterDetails = get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
+        $counterDetails = HelperClass::get_count_where(new services_with_orders_details(), array('services_with_orders_auto_serial' => $data['auto_serial'], 'order_type' => $data['order_type'], 'com_code' => $com_code));
         if ($counterDetails == 0) {
             return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد الفاتورة قبل اضافة خدمات عليها !!!            "]);
         }
@@ -487,7 +488,7 @@ class Services_with_ordersController extends Controller
                 return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
             }
             //check for user shift
-            $user_shift = get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
+            $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
             //chehck if is empty
             if (empty($user_shift)) {
                 return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => " عفوا لاتملتك الان شفت خزنة مفتوح لكي تتمكن من اتمام عمليه الصرف"]);
@@ -499,12 +500,12 @@ class Services_with_ordersController extends Controller
                     return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => " عفوا لاتملتك الان رصيد كافي بخزنة الصرف  لكي تتمكن من اتمام عمليه الصرف"]);
                 }
 
-                $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_exhcange"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 if (empty($treasury_date)) {
                     return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
                 }
             } else {
-                $treasury_date = get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 if (empty($treasury_date)) {
                     return redirect()->route("admin.Services_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
                 }
@@ -515,20 +516,20 @@ class Services_with_ordersController extends Controller
 
 
 
-        $flag = update(new services_with_orders(), $dataUpdateParent, array("id" => $id, "com_code" => $com_code, 'is_approved' => 0));
+        $flag = HelperClass::update(new services_with_orders(), $dataUpdateParent, array("id" => $id, "com_code" => $com_code, 'is_approved' => 0));
         if ($flag) {
 
             if ($data['is_account_number'] == 1) {
                 $account_type = Account::where(["account_number" => $data['account_number']])->value("account_type");
 
                 if ($account_type == 2) {
-                    $the_final_Balance = refresh_account_blance_supplier($data['account_number'], new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
+                    $the_final_Balance = HelperClass::refresh_account_blance_supplier($data['account_number'], new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
                 } elseif ($account_type == 3) {
-                    $the_final_Balance = refresh_account_blance_customer($data['account_number'], new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), false);
+                    $the_final_Balance = HelperClass::refresh_account_blance_customer($data['account_number'], new Account(), new Customer(), new Treasuries_transactions(), new Sales_invoices(), new SalesReturn(), new services_with_orders(), false);
                 } elseif ($account_type == 4) {
-                    $the_final_Balance =  refresh_account_blance_delegate($data['account_number'], new Account(), new Delegate(), new Treasuries_transactions(), new Sales_invoices(), new services_with_orders(), false);
+                    $the_final_Balance =  HelperClass::refresh_account_blance_delegate($data['account_number'], new Account(), new Delegate(), new Treasuries_transactions(), new Sales_invoices(), new services_with_orders(), false);
                 } else {
-                    $the_final_Balance = refresh_account_blance_General($data['account_number'], new Account(), new Treasuries_transactions(), new services_with_orders(), false);
+                    $the_final_Balance = HelperClass::refresh_account_blance_General($data['account_number'], new Account(), new Treasuries_transactions(), new services_with_orders(), false);
                 }
             }
 
@@ -571,7 +572,7 @@ class Services_with_ordersController extends Controller
 
 
 
-                $last_record_treasuries_transactions_record = get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
+                $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
                 if (!empty($last_record_treasuries_transactions_record)) {
                     $dataInsert_treasuries_transactions['auto_serial'] = $last_record_treasuries_transactions_record['auto_serial'] + 1;
                 } else {
@@ -588,21 +589,21 @@ class Services_with_ordersController extends Controller
                 $dataInsert_treasuries_transactions['created_at'] = date("Y-m-Y H:i:s");
                 $dataInsert_treasuries_transactions['added_by'] = auth()->user()->id;
                 $dataInsert_treasuries_transactions['com_code'] = $com_code;
-                $flag = insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
+                $flag = HelperClass::insert(new Treasuries_transactions(), $dataInsert_treasuries_transactions);
                 if ($flag) {
                     if ($data['order_type'] == 1) {
                         //update Treasuries last_isal_collect
                         $dataUpdateTreasuries['last_isal_exhcange'] = $dataInsert_treasuries_transactions['isal_number'];
-                        update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                        HelperClass::update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                     } else {
                         //update Treasuries last_isal_collect
                         $dataUpdateTreasuries['last_isal_collect'] = $dataInsert_treasuries_transactions['isal_number'];
-                        update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
+                        HelperClass::update(new Treasuries(), $dataUpdateTreasuries, array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                     }
                 }
             }
             if ($data['is_account_number'] == 1) {
-                refresh_account_blance_General($data['account_number'], new Account(), new Treasuries_transactions(), true);
+                HelperClass::refresh_account_blance_General($data['account_number'], new Account(), new Treasuries_transactions(), true);
             }
 
             return redirect()->route("admin.Services_orders.show", $data['id'])->with(['success' => " تم اعتماد وترحيل الفاتورة بنجاح  "]);
@@ -715,7 +716,7 @@ class Services_with_ordersController extends Controller
 
         try {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $invoice_data = HelperClass::get_cols_where_row(new services_with_orders(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($invoice_data)) {
                 return redirect()->route('Services_orders.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -725,7 +726,7 @@ class Services_with_ordersController extends Controller
                 $invoice_data['account_name'] = Account::where('account_number', $invoice_data['account_number'])->value('name');
             }
 
-            $invoices_details = get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $invoice_data['auto_serial'], 'order_type' => $invoice_data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
+            $invoices_details = HelperClass::get_cols_where(new services_with_orders_details(), array("*"), array('services_with_orders_auto_serial' => $invoice_data['auto_serial'], 'order_type' => $invoice_data['order_type'], 'com_code' => $com_code), 'id', 'DESC');
             if (!empty($invoices_details)) {
                 foreach ($invoices_details as $info) {
                     $info->service_name = Services::where('id', $info->service_id)->value('name');
@@ -738,7 +739,7 @@ class Services_with_ordersController extends Controller
 
 
 
-            $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+            $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
 
             if ($size == "A4") {
                 return view('admin.services_with_orders.printsaleswina4', ['data' => $invoice_data, 'systemData' => $systemData, 'invoices_details' => $invoices_details]);

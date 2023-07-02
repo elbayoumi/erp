@@ -14,6 +14,7 @@ use App\Models\{
     Inv_itemcard_batches,
 };
 use App\Http\Controllers\Controller;
+use Helpers\HelperClass;
 use Illuminate\Http\Request;
 
 class Inv_stores_transferIncomingController extends Controller
@@ -21,7 +22,7 @@ class Inv_stores_transferIncomingController extends Controller
     public function index()
     {
         $com_code = auth()->user()->com_code;
-        $data = get_cols_where_p(new inv_stores_transfer(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
+        $data = HelperClass::get_cols_where_p(new inv_stores_transfer(), array("*"), array("com_code" => $com_code), 'id', 'DESC', PAGINATION_COUNT);
         if (!empty($data)) {
             foreach ($data as $info) {
                 $info->added_by_admin = Admin::where('id', $info->added_by)->value('name');
@@ -32,14 +33,14 @@ class Inv_stores_transferIncomingController extends Controller
                 }
             }
         }
-        $stores = get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
+        $stores = HelperClass::get_cols_where(new Store(), array('id', 'name'), array('com_code' => $com_code, 'active' => 1), 'id', 'ASC');
         return view('admin.inv_stores_transfer_incoming.index', ['data' => $data, 'stores' => $stores]);
     }
     public function show($id)
     {
         try {
             $com_code = auth()->user()->com_code;
-            $data = get_cols_where_row(new inv_stores_transfer(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $data = HelperClass::get_cols_where_row(new inv_stores_transfer(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($data)) {
                 return redirect()->route('inv_stores_transfer.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -50,11 +51,11 @@ class Inv_stores_transferIncomingController extends Controller
             if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                 $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
             }
-            $details = get_cols_where(new inv_stores_transfer_details(), array("*"), array('inv_stores_transfer_auto_serial' => $data['auto_serial'],  'com_code' => $com_code), 'id', 'DESC');
+            $details = HelperClass::get_cols_where(new inv_stores_transfer_details(), array("*"), array('inv_stores_transfer_auto_serial' => $data['auto_serial'],  'com_code' => $com_code), 'id', 'DESC');
             if (!empty($details)) {
                 foreach ($details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                     $data['added_by_admin'] = Admin::where('id', $data['added_by'])->value('name');
                     if ($data['updated_by'] > 0 and $data['updated_by'] != null) {
                         $data['updated_by_admin'] = Admin::where('id', $data['updated_by'])->value('name');
@@ -72,14 +73,14 @@ class Inv_stores_transferIncomingController extends Controller
     {
         $com_code = auth()->user()->com_code;
         //check is not approved
-        $data = get_cols_where_row(new inv_stores_transfer(), array("auto_serial", "transfer_from_store_id", "transfer_to_store_id", "is_approved"), array("id" => $id_parent, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new inv_stores_transfer(), array("auto_serial", "transfer_from_store_id", "transfer_to_store_id", "is_approved"), array("id" => $id_parent, "com_code" => $com_code));
         if (empty($data)) {
             return redirect()->route("admin.inv_stores_transfer_incoming.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
         if ($data['is_approved'] == 1) {
             return redirect()->route("admin.suppliers_orders.show", $id_parent)->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
         }
-        $dataDetails = get_cols_where_row(new inv_stores_transfer_details(), array("is_approved"), array("id" => $id, "com_code" => $com_code));
+        $dataDetails = HelperClass::get_cols_where_row(new inv_stores_transfer_details(), array("is_approved"), array("id" => $id, "com_code" => $com_code));
         if (empty($dataDetails)) {
             return redirect()->route("admin.inv_stores_transfer_incoming.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
@@ -88,17 +89,17 @@ class Inv_stores_transferIncomingController extends Controller
         }
         //store move حركة مخزن الاستلام
         //first Get item card data جنجيب الاصناف بالكود الحالي  علي امر التحويل
-        $items = get_cols_where(new inv_stores_transfer_details(), array("*"), array("inv_stores_transfer_auto_serial" => $data['auto_serial'], "com_code" => $com_code, "id" => $id), "id", "ASC");
+        $items = HelperClass::get_cols_where(new inv_stores_transfer_details(), array("*"), array("inv_stores_transfer_auto_serial" => $data['auto_serial'], "com_code" => $com_code, "id" => $id), "id", "ASC");
         if (!empty($items)) {
             foreach ($items as $info) {
                 //get itemCard Data
-                $itemCard_Data = get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $info->item_code));
+                $itemCard_Data = HelperClass::get_cols_where_row(new Inv_itemCard(), array("uom_id", "retail_uom_quntToParent", "retail_uom_id", "does_has_retailunit"), array("com_code" => $com_code, "item_code" => $info->item_code));
                 if (!empty($itemCard_Data)) {
                     //get Quantity Befor any Action  حنجيب كيمة الصنف بكل المخازن قبل الحركة
-                    $quantityBeforMove = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
+                    $quantityBeforMove = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
                     //get Quantity Befor any Action  حنجيب كيمة الصنف  بمخزن الاستلام المشتريات الحالي قبل الحركة
-                    $quantityBeforMoveCurrntStore = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['transfer_to_store_id']));
-                    $MainUomName = get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
+                    $quantityBeforMoveCurrntStore = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['transfer_to_store_id']));
+                    $MainUomName = HelperClass::get_field_value(new Inv_uom(), "name", array("com_code" => $com_code, "id" => $itemCard_Data['uom_id']));
                     //if is parent Uom لو وحده اب
                     if ($info->isparentuom == 1) {
                         $quntity = $info->deliverd_quantity;
@@ -116,7 +117,7 @@ class Inv_stores_transferIncomingController extends Controller
                     $dataInsertBatch["expired_date"] = $info->expire_date;
                     $dataInsertBatch["unit_cost_price"] = $unit_price;
                     $dataInsertBatch["inv_uoms_id"] = $itemCard_Data['uom_id'];
-                    $OldBatchExsists = get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), $dataInsertBatch);
+                    $OldBatchExsists = HelperClass::get_cols_where_row(new Inv_itemcard_batches(), array("quantity", "id", "unit_cost_price"), $dataInsertBatch);
                     if (!empty($OldBatchExsists)) {
                         //update current Batch تحديث علي الباتش القديمة
                         $dataUpdateOldBatch['quantity'] = $OldBatchExsists['quantity'] + $quntity;
@@ -124,7 +125,7 @@ class Inv_stores_transferIncomingController extends Controller
                         $dataUpdateOldBatch["updated_at"] = date("Y-m-d H:i:s");
                         $dataUpdateOldBatch["updated_by"] = auth()->user()->id;
                         $theBatchID = $OldBatchExsists['id'];
-                        update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $OldBatchExsists['id'], "com_code" => $com_code));
+                        HelperClass::update(new Inv_itemcard_batches(), $dataUpdateOldBatch, array("id" => $OldBatchExsists['id'], "com_code" => $com_code));
                     } else {
                         //insert new Batch ادخال باتش جديده
                         $dataInsertBatch["quantity"] = $quntity;
@@ -132,23 +133,23 @@ class Inv_stores_transferIncomingController extends Controller
                         $dataInsertBatch["created_at"] = date("Y-m-d H:i:s");
                         $dataInsertBatch["added_by"] = auth()->user()->id;
                         $dataInsertBatch["com_code"] = $com_code;
-                        $row = get_cols_where_row_orderby(new Inv_itemcard_batches(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
+                        $row = HelperClass::get_cols_where_row_orderby(new Inv_itemcard_batches(), array("auto_serial"), array("com_code" => $com_code), 'id', 'DESC');
                         if (!empty($row)) {
                             $dataInsertBatch['auto_serial'] = $row['auto_serial'] + 1;
                         } else {
                             $dataInsertBatch['auto_serial'] = 1;
                         }
-                        insert(new Inv_itemcard_batches(), $dataInsertBatch);
-                        $theBatchID = get_field_value(new Inv_itemcard_batches(), 'auto_serial', $dataInsertBatch);
+                        HelperClass::insert(new Inv_itemcard_batches(), $dataInsertBatch);
+                        $theBatchID = HelperClass::get_field_value(new Inv_itemcard_batches(), 'auto_serial', $dataInsertBatch);
                     }
                     $dataToUpdateDetails['is_approved'] = 1;
                     $dataToUpdateDetails['approved_by'] = auth()->user()->id;
                     $dataToUpdateDetails['approved_at'] = date("Y-m-d H:i:s");
-                    update(new inv_stores_transfer_details(), $dataToUpdateDetails, array("id" => $id, "com_code" => $com_code));
+                    HelperClass::update(new inv_stores_transfer_details(), $dataToUpdateDetails, array("id" => $id, "com_code" => $com_code));
                     //كمية الصنف بكل المخازن بعد اتمام حركة الباتشات وترحيلها
-                    $quantityAfterMove = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
+                    $quantityAfterMove = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code));
                     //كمية الصنف بمخزن فاتورة الشراء  بعد اتمام حركة الباتشات وترحيلها
-                    $quantityAfterMoveCurrentStore = get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['transfer_to_store_id']));
+                    $quantityAfterMoveCurrentStore = HelperClass::get_sum_where(new Inv_itemcard_batches(), "quantity", array("item_code" => $info->item_code, "com_code" => $com_code, 'store_id' => $data['transfer_to_store_id']));
                     $dataInsert_inv_itemcard_movements['inv_itemcard_movements_categories'] = 3;
                     $dataInsert_inv_itemcard_movements['items_movements_types'] = 22;
                     $dataInsert_inv_itemcard_movements['item_code'] = $info->item_code;
@@ -171,11 +172,11 @@ class Inv_stores_transferIncomingController extends Controller
                     $dataInsert_inv_itemcard_movements["added_by"] = auth()->user()->id;
                     $dataInsert_inv_itemcard_movements["date"] = date("Y-m-d");
                     $dataInsert_inv_itemcard_movements["com_code"] = $com_code;
-                    insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
+                    HelperClass::insert(new Inv_itemcard_movements(), $dataInsert_inv_itemcard_movements);
                     //item Move Card حركة الصنف
                 }
                 // update itemcard Quantity mirror  تحديث المرآه الرئيسية للصنف
-                do_update_itemCardQuantity(new Inv_itemCard(), $info->item_code, new Inv_itemcard_batches(), $itemCard_Data['does_has_retailunit'], $itemCard_Data['retail_uom_quntToParent']);
+                HelperClass::do_update_itemCardQuantity(new Inv_itemCard(), $info->item_code, new Inv_itemcard_batches(), $itemCard_Data['does_has_retailunit'], $itemCard_Data['retail_uom_quntToParent']);
             }
         }
         return redirect()->route("admin.inv_stores_transfer_incoming.show", $id_parent)->with(['success' => " تم اعتماد واستلام كمية الصنف  بنجاح  "]);
@@ -184,8 +185,8 @@ class Inv_stores_transferIncomingController extends Controller
     {
         if ($request->ajax()) {
             $com_code = auth()->user()->com_code;
-            $parent_pill_data = get_cols_where_row(new inv_stores_transfer(), array("is_approved", "id"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, "is_approved" => 0));
-            $data = get_cols_where_row(new inv_stores_transfer_details(), array("is_approved", "id"), array("id" => $request->id, "com_code" => $com_code, "is_approved" => 0, "is_canceld_receive" => 0));
+            $parent_pill_data = HelperClass::get_cols_where_row(new inv_stores_transfer(), array("is_approved", "id"), array("auto_serial" => $request->autoserailparent, "com_code" => $com_code, "is_approved" => 0));
+            $data = HelperClass::get_cols_where_row(new inv_stores_transfer_details(), array("is_approved", "id"), array("id" => $request->id, "com_code" => $com_code, "is_approved" => 0, "is_canceld_receive" => 0));
             return view("admin.inv_stores_transfer_incoming.load_cancel_one_details", ['parent_pill_data' => $parent_pill_data, 'data' => $data]);
         }
     }
@@ -194,14 +195,14 @@ class Inv_stores_transferIncomingController extends Controller
     {
         $com_code = auth()->user()->com_code;
         //check is not approved
-        $data = get_cols_where_row(new inv_stores_transfer(), array("auto_serial", "transfer_from_store_id", "transfer_to_store_id", "is_approved"), array("id" => $id_parent, "com_code" => $com_code));
+        $data = HelperClass::get_cols_where_row(new inv_stores_transfer(), array("auto_serial", "transfer_from_store_id", "transfer_to_store_id", "is_approved"), array("id" => $id_parent, "com_code" => $com_code));
         if (empty($data)) {
             return redirect()->route("admin.inv_stores_transfer_incoming.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
         if ($data['is_approved'] == 1) {
             return redirect()->route("admin.suppliers_orders.show", $id_parent)->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
         }
-        $dataDetails = get_cols_where_row(new inv_stores_transfer_details(), array("is_approved"), array("id" => $id, "com_code" => $com_code));
+        $dataDetails = HelperClass::get_cols_where_row(new inv_stores_transfer_details(), array("is_approved"), array("id" => $id, "com_code" => $com_code));
         if (empty($dataDetails)) {
             return redirect()->route("admin.inv_stores_transfer_incoming.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
@@ -215,7 +216,7 @@ class Inv_stores_transferIncomingController extends Controller
         $dataToUpdateDetails['is_canceld_receive'] = 1;
         $dataToUpdateDetails['canceld_by'] = auth()->user()->id;
         $dataToUpdateDetails['canceld_at'] = date("Y-m-d H:i:s");
-        update(new inv_stores_transfer_details(), $dataToUpdateDetails, array("id" => $id, "com_code" => $com_code));
+        HelperClass::update(new inv_stores_transfer_details(), $dataToUpdateDetails, array("id" => $id, "com_code" => $com_code));
         return redirect()->route("admin.inv_stores_transfer_incoming.show", $id_parent)->with(['success' => "لقد تم الالغاء  بنجاح"]);
     }
 
@@ -313,7 +314,7 @@ class Inv_stores_transferIncomingController extends Controller
 
         try {
             $com_code = auth()->user()->com_code;
-            $invoice_data = get_cols_where_row(new inv_stores_transfer(), array("*"), array("id" => $id, "com_code" => $com_code));
+            $invoice_data = HelperClass::get_cols_where_row(new inv_stores_transfer(), array("*"), array("id" => $id, "com_code" => $com_code));
             if (empty($invoice_data)) {
                 return redirect()->route('inv_stores_transfer_incoming.index')->with(['error' => 'عفوا غير قادر علي الوصول الي البيانات المطلوبة !!']);
             }
@@ -321,14 +322,14 @@ class Inv_stores_transferIncomingController extends Controller
             $invoice_data['from_store_name'] = Store::where('id', $invoice_data['transfer_from_store_id'])->value('name');
             $invoice_data['to_store_name'] = Store::where('id', $invoice_data['transfer_to_store_id'])->value('name');
 
-            $invoices_details = get_cols_where(new inv_stores_transfer_details(), array("*"), array('inv_stores_transfer_auto_serial' => $invoice_data['auto_serial'], 'com_code' => $com_code), 'id', 'ASC');
+            $invoices_details = HelperClass::get_cols_where(new inv_stores_transfer_details(), array("*"), array('inv_stores_transfer_auto_serial' => $invoice_data['auto_serial'], 'com_code' => $com_code), 'id', 'ASC');
             if (!empty($invoices_details)) {
                 foreach ($invoices_details as $info) {
                     $info->item_card_name = Inv_itemCard::where('item_code', $info->item_code)->value('name');
-                    $info->uom_name = get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
+                    $info->uom_name = HelperClass::get_field_value(new Inv_uom(), "name", array("id" => $info->uom_id));
                 }
             }
-            $systemData = get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
+            $systemData = HelperClass::get_cols_where_row(new Admin_panel_setting(), array("system_name", "phone", "address", "photo"), array("com_code" => $com_code));
 
             if ($size == "A4") {
                 return view('admin.inv_stores_transfer_incoming.printsaleswina4', ['data' => $invoice_data, 'systemData' => $systemData, 'sales_invoices_details' => $invoices_details]);
