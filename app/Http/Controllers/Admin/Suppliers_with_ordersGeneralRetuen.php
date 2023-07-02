@@ -86,7 +86,7 @@ class Suppliers_with_ordersGeneralRetuen extends Controller
             $data_insert['com_code'] = $com_code;
             HelperClass::insert(new Suppliers_with_orders(), $data_insert);
             $id = HelperClass::get_field_value(new Suppliers_with_orders(), "id", array("auto_serial" => $data_insert['auto_serial'], "com_code" => $com_code, "order_type" => 3));
-            return redirect()->route("admin.suppliers_orders_general_return.show", $id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
+            return redirect()->route("suppliers_orders_general_return.show", $id)->with(['success' => 'لقد تم اضافة البيانات بنجاح']);
         } catch (\Exception $ex) {
             return redirect()->back()
                 ->with(['error' => 'عفوا حدث خطأ ما' . $ex->getMessage()])
@@ -581,15 +581,15 @@ class Suppliers_with_ordersGeneralRetuen extends Controller
         //check is not approved
         $data = HelperClass::get_cols_where_row(new Suppliers_with_orders(), array("total_cost_items", "is_approved", "id", "account_number", "store_id", "suuplier_code"), array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 3));
         if (empty($data)) {
-            return redirect()->route("admin.suppliers_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
+            return redirect()->route("suppliers_orders.index")->with(['error' => "عفوا غير قادر علي الوصول الي البيانات المطلوبة !!"]);
         }
         if ($data['is_approved'] == 1) {
-            return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
+            return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد فاتورة معتمده من قبل !!"]);
         }
         $SupplierName = HelperClass::get_field_value(new Supplier(), "name", array("com_code" => $com_code, "suuplier_code" => $data['suuplier_code']));
         $counterDetails = HelperClass::get_count_where(new Suppliers_with_orders_details(), array("suppliers_with_orders_auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 3));
         if ($counterDetails == 0) {
-            return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد الفاتورة قبل اضافة الأصناف عليها !!!            "]);
+            return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => "عفوا لايمكن اعتماد الفاتورة قبل اضافة الأصناف عليها !!!            "]);
         }
         $dataUpdateParent['tax_percent'] = $request['tax_percent'];
         $dataUpdateParent['tax_value'] = $request['tax_value'];
@@ -607,13 +607,13 @@ class Suppliers_with_ordersGeneralRetuen extends Controller
         //first check for pill type sate cash
         if ($request['pill_type'] == 1) {
             if ($request['what_paid'] != $request['total_cost']) {
-                return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان يكون المبلغ بالكامل مدفوع في حالة الفاتورة كاش !!"]);
+                return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان يكون المبلغ بالكامل مدفوع في حالة الفاتورة كاش !!"]);
             }
         }
         //second  check for pill type sate agel
         if ($request['pill_type'] == 2) {
             if ($request['what_paid'] == $request['total_cost']) {
-                return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ بالكامل مدفوع في حالة الفاتورة اجل !!"]);
+                return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ بالكامل مدفوع في حالة الفاتورة اجل !!"]);
             }
         }
         $dataUpdateParent['what_paid'] = $request['what_paid'];
@@ -621,13 +621,13 @@ class Suppliers_with_ordersGeneralRetuen extends Controller
         //thaird  check for what paid
         if ($request['what_paid'] > 0) {
             if ($request['what_paid'] > $request['total_cost']) {
-                return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
+                return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => "عفوا يجب ان لايكون المبلغ المدفوع اكبر من اجمالي الفاتورة      !!"]);
             }
             //check for user shift
             $user_shift = HelperClass::get_user_shift(new Admins_Shifts(), new Treasuries(), new Treasuries_transactions());
             //chehck if is empty
             if (empty($user_shift)) {
-                return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا لاتملتك الان شفت خزنة مفتوح لكي تتمكن من اتمام عمليه الصرف"]);
+                return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => " عفوا لاتملتك الان شفت خزنة مفتوح لكي تتمكن من اتمام عمليه الصرف"]);
             }
         }
         $flag = HelperClass::update(new Suppliers_with_orders(), $dataUpdateParent, array("auto_serial" => $auto_serial, "com_code" => $com_code, 'order_type' => 3));
@@ -640,7 +640,7 @@ class Suppliers_with_ordersGeneralRetuen extends Controller
                 //first get isal number with treasuries
                 $treasury_date = HelperClass::get_cols_where_row(new Treasuries(), array("last_isal_collect"), array("com_code" => $com_code, "id" => $user_shift['treasuries_id']));
                 if (empty($treasury_date)) {
-                    return redirect()->route("admin.suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
+                    return redirect()->route("suppliers_orders.show", $data['id'])->with(['error' => " عفوا غير قادر علي الوصول الي بيانات الخزنة المطلوبة"]);
                 }
                 $last_record_treasuries_transactions_record = HelperClass::get_cols_where_row_orderby(new Treasuries_transactions(), array("auto_serial"), array("com_code" => $com_code), "auto_serial", "DESC");
                 if (!empty($last_record_treasuries_transactions_record)) {
@@ -673,7 +673,7 @@ class Suppliers_with_ordersGeneralRetuen extends Controller
                 }
             }
             HelperClass::refresh_account_blance_supplier($data['account_number'], new Account(), new Supplier(), new Treasuries_transactions(), new Suppliers_with_orders(), new services_with_orders(), false);
-            return redirect()->route("admin.suppliers_orders_general_return.show", $data['id'])->with(['success' => " تم اعتماد وترحيل الفاتورة بنجاح  "]);
+            return redirect()->route("suppliers_orders_general_return.show", $data['id'])->with(['success' => " تم اعتماد وترحيل الفاتورة بنجاح  "]);
         }
     }
 
